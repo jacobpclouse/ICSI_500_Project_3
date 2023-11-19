@@ -19,5 +19,7 @@ and use a socket to share the generated results to the server. All communication
 nodes will be encoded according to the format defined in project-2
 
 
+# figure out how to do a three way (ie: client -> server -> helper)
+
 ## Resources Used: 
 - 
