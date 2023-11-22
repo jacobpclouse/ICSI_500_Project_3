@@ -1,3 +1,6 @@
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Importing Libraries / Modules / Headers
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "encDec.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +15,11 @@
 #define MAX_CLIENTS 6
 #define BUFFER_SIZE 2048
 
+#define HELPER_SERVER_IP "127.0.0.1"  // Use the actual IP address if the helper is on a different machine
+#define HELPER_SERVER_PORT 8081
+
+int helper_server_socket;
+
 struct Client {
     int socket;
     char name[BUFFER_SIZE];
@@ -19,6 +27,22 @@ struct Client {
 
 struct Client clients[MAX_CLIENTS];
 int client_count = 0;
+
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Functions
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+// Function to print out my logo
+void myLogo()
+{
+    printf("Created and Tested by: \n");
+    printf("   __                  _         ___ _                       \n");
+    printf("   \\ \\  __ _  ___ ___ | |__     / __\\ | ___  _   _ ___  ___  \n");
+    printf("    \\ \\/ _` |/ __/ _ \\| '_ \\   / /  | |/ _ \\| | | / __|/ _ \\ \n");
+    printf(" /\\_/ / (_| | (_| (_) | |_) | / /___| | (_) | |_| \\__ \\  __/ \n");
+    printf(" \\___/ \\__,_|\\___\\___/|_.__/  \\____/|_|\\___/ \\__,_|___/\\___| \n");
+    printf("¡¡Dedicated to Peter Zlomek and Harely Alderson III!!\n\n");
+}
 
 // Function to send the list of logged-in clients to a specified client
 void send_client_list(int current_client) {
@@ -68,7 +92,20 @@ void notify_new_client(char *sender_name) {
     }
 }
 
-// Function that handles full communication with multiple clients
+// ****
+// Function to handle communication with the helper server
+void communicate_with_helper(char *message, char *result) {
+
+    // IS THIS RIGHT???
+
+    // int helper_server_socket; // Initialize this with the actual socket for the helper server
+    send(helper_server_socket, message, strlen(message), 0);
+    recv(helper_server_socket, result, BUFFER_SIZE, 0);
+}
+// **
+
+
+// Function that handles full communication with multiple clients ***** 
 void *handle_client(void *arg) {
     // Extract the client socket from the argument
     int client_socket = *((int *)arg);
@@ -127,13 +164,26 @@ void *handle_client(void *arg) {
         // Null-terminate the received message
         message[bytes_received] = '\0';
 
+        // -----
+        // Send the message to the helper server for processing
+        char result[BUFFER_SIZE];
+        communicate_with_helper(message, result);
+
+        // Broadcast the result to all clients
+        broadcast(result, client_socket, sender_name);
+
+
+
         // Broadcast the message to all clients
-        broadcast(message, client_socket, sender_name);
+        // broadcast(message, client_socket, sender_name);
     }
 
     return NULL;
 }
 
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # MAIN
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 int main(int argc, char *argv[]) {
     // Check if the correct number of command-line arguments is provided
     if (argc != 3) {
@@ -165,7 +215,33 @@ int main(int argc, char *argv[]) {
         perror("Listen error");
         exit(1);
     }
+    // --- main above, helper stuff below
+    // Create a socket for the helper server
+    helper_server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (helper_server_socket == -1) {
+        perror("Helper server socket creation error");
+        exit(EXIT_FAILURE);
+    }
 
+    // Configure the helper server address
+    struct sockaddr_in helper_server_addr;
+    helper_server_addr.sin_family = AF_INET;
+    helper_server_addr.sin_port = htons(HELPER_SERVER_PORT);
+    if (inet_pton(AF_INET, HELPER_SERVER_IP, &helper_server_addr.sin_addr) <= 0) {
+        perror("Helper server address conversion error");
+        exit(EXIT_FAILURE);
+    }
+
+    // Connect to the helper server
+    if (connect(helper_server_socket, (struct sockaddr *)&helper_server_addr, sizeof(helper_server_addr)) < 0) {
+        perror("Helper server connection error");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Connected to helper server\n");
+
+
+    // ----
     // Set the size of the client address structure
     addr_size = sizeof(client_addr);
 
