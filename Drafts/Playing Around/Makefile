@@ -4,18 +4,18 @@ LIBS = -lpthread
 FUNC = encDec.c
 
 # Server and Client executables
-SERVER = server
-CLIENT = client
+SERVER = 1_server
+CLIENT = 2_client
 HELPER = helper
 SAMPLE = sampleThreads
 
-all: $(SERVER) $(CLIENT) $(HELPER)
+all: $(SERVER) $(CLIENT)
 
 $(SERVER): $(SERVER_SRC)
-	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER).c
+	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER).c $(LIBS)
 
 $(CLIENT): $(CLIENT_SRC)
-	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT).c
+	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT).c $(LIBS)
 
 $(HELPER): $(HELPER).c
 	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c

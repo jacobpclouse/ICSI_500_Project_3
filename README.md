@@ -1,6 +1,8 @@
 # ICSI_500_Project_3
 Develop a practical understanding of task collaboration using socket programming, semaphores, multithreading.
 
+# YOU NEED TO RENAME ALL THE FUNCTION & VARIABLE NAMES BEFORE SUBMITTING
+
 ## OBJECTIVES
 Develop a client/server application using Linux TCP sockets and the C programming language.
 Your solution will be based on the code you developed for project-2. You are to add to the Chat
