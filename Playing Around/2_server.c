@@ -12,21 +12,31 @@
 #include <pthread.h>
 #include <time.h>
 
+// constants for the server / client
 #define MAXIMUM_CONNECTED_CLIENTS 6
 #define BUFFER_SIZE 2048
 
-#define HELPER_SERVER_IP "127.0.0.1"  // Use the actual IP address if the helper is on a different machine
+// here we have our info for our helper server
+#define HELPER_SERVER_IP "127.0.0.1"
 #define HELPER_SERVER_PORT 8081
-
 int helper_server_socket;
 
-struct Client {
+
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Structs -- move to header if can
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+// Structure to model client data on
+// Referenced code here: https://www.geeksforgeeks.org/structures-c/#
+struct organizedClientData {
     int socket;
     char name[BUFFER_SIZE];
 };
 
-struct Client clients[MAXIMUM_CONNECTED_CLIENTS];
+// creating struct
+struct organizedClientData clients[MAXIMUM_CONNECTED_CLIENTS];
 int client_count = 0;
+
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -130,7 +140,7 @@ void *handle_client(void *arg) {
     sender_name[bytes_received] = '\0';
 
     // Store the client information in the array
-    struct Client new_client;
+    struct organizedClientData new_client;
     new_client.socket = client_socket;
     strncpy(new_client.name, sender_name, BUFFER_SIZE);
 
