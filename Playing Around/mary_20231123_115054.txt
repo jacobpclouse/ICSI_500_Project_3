@@ -1,6 +1,0 @@
-Logged in clients:
-jake
-mary
-New client joined: mary
-hi jake
-[jake]=> SUP MARY

@@ -1,0 +1,7 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jimbo
+-=-=-=-=-=-=-=-=-
+New client joined: jimbo
+New client joined: katey
+[katey]=> SUP

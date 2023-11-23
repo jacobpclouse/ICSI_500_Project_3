@@ -57,38 +57,42 @@ void myLogo()
 // -- Function to send out list of already logged in clients to new client --
 // Source: https://stackoverflow.com/questions/41104762/sent-a-message-to-all-clients-with-c-programming
 void outputConnectedClients(int selectedClient) {
-    char client_list[BUFFER_SIZE]; // Create a buffer to store the list of clients
-    memset(client_list, 0, BUFFER_SIZE); // Initialize the buffer with zeros
+
+    char listOfClients[BUFFER_SIZE]; // Create a buffer to store the list of clients
+    memset(listOfClients, 0, BUFFER_SIZE); // Initialize the buffer with zeros
 
     // Loop through each logged-in client
     for (int i = 0; i < client_count; i++) {
-        // Concatenate the name of each client to the client_list buffer, followed by a newline
-        strcat(client_list, clients[i].name);
-        strcat(client_list, "\n");
+        // Concatenate the name of each client to the listOfClients buffer, followed by a newline
+        strcat(listOfClients, clients[i].name);
+        strcat(listOfClients, "\n");
     }
 
-    char message[BUFFER_SIZE];// Create a buffer to store the final message to be sent
-    snprintf(message, BUFFER_SIZE, "Logged in clients:\n%s", client_list);// Format the message with the list of clients
-    send(selectedClient, message, strlen(message), 0);// Send the message to the specified client
+    char communicationToSend[BUFFER_SIZE];// Create a buffer to store the final message to be sent
+    snprintf(communicationToSend, BUFFER_SIZE, "-=-=-=-=-=-=-=-=-\nCurrently logged in clients:\n%s-=-=-=-=-=-=-=-=-\n", listOfClients);// Format the message with the list of clients
+    send(selectedClient, communicationToSend, strlen(communicationToSend), 0);// Send the message to the specified client
 }
 
 
 
-// Function to broadcast a message to all connected clients, except the current client
-void broadcast(char *message, int current_client, char *sender_name) {
+// -- Function to send out data to all connected clients
+// Source: https://stackoverflow.com/questions/41104762/sent-a-message-to-all-clients-with-c-programming
+void sendPublicMessage(char *message, int current_client, char *sender_name) {
     
-    char formatted_message[BUFFER_SIZE];// Create a buffer to store the formatted message
-    snprintf(formatted_message, BUFFER_SIZE, "[%s]=> %s", sender_name, message); // Format the message with the sender's name
+    char outboundMessage[BUFFER_SIZE];// Create a buffer to store the formatted message
+    snprintf(outboundMessage, BUFFER_SIZE, "[%s]=> %s", sender_name, message); // Format the message with the sender's name
 
     // Iterate through all connected clients
     for (int i = 0; i < client_count; i++) {
         // Check if the current client is not the one specified in the parameter
         if (clients[i].socket != current_client) {
             // Send the formatted message to the current client using its socket
-            send(clients[i].socket, formatted_message, strlen(formatted_message), 0);
+            send(clients[i].socket, outboundMessage, strlen(outboundMessage), 0);
         }
     }
 }
+
+
 
 // Function to notify all existing clients about a new client
 void notify_new_client(char *sender_name) {
@@ -182,13 +186,9 @@ void *handle_client(void *arg) {
         char result[BUFFER_SIZE];
         communicate_with_helper(message, result);
 
-        // Broadcast the result to all clients
-        broadcast(result, client_socket, sender_name);
+        // send result to all clients
+        sendPublicMessage(result, client_socket, sender_name);
 
-
-
-        // Broadcast the message to all clients
-        // broadcast(message, client_socket, sender_name);
     }
 
     return NULL;
