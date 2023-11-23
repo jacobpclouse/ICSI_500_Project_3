@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <time.h>
 
-#define MAX_CLIENTS 6
+#define MAXIMUM_CONNECTED_CLIENTS 6
 #define BUFFER_SIZE 2048
 
 #define HELPER_SERVER_IP "127.0.0.1"  // Use the actual IP address if the helper is on a different machine
@@ -25,7 +25,7 @@ struct Client {
     char name[BUFFER_SIZE];
 };
 
-struct Client clients[MAX_CLIENTS];
+struct Client clients[MAXIMUM_CONNECTED_CLIENTS];
 int client_count = 0;
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -44,8 +44,9 @@ void myLogo()
     printf("¡¡Dedicated to Peter Zlomek and Harely Alderson III!!\n\n");
 }
 
-// Function to send the list of logged-in clients to a specified client
-void send_client_list(int current_client) {
+// -- Function to send out list of already logged in clients to new client --
+// Source: https://stackoverflow.com/questions/41104762/sent-a-message-to-all-clients-with-c-programming
+void outputConnectedClients(int selectedClient) {
     char client_list[BUFFER_SIZE]; // Create a buffer to store the list of clients
     memset(client_list, 0, BUFFER_SIZE); // Initialize the buffer with zeros
 
@@ -58,8 +59,10 @@ void send_client_list(int current_client) {
 
     char message[BUFFER_SIZE];// Create a buffer to store the final message to be sent
     snprintf(message, BUFFER_SIZE, "Logged in clients:\n%s", client_list);// Format the message with the list of clients
-    send(current_client, message, strlen(message), 0);// Send the message to the specified client
+    send(selectedClient, message, strlen(message), 0);// Send the message to the specified client
 }
+
+
 
 // Function to broadcast a message to all connected clients, except the current client
 void broadcast(char *message, int current_client, char *sender_name) {
@@ -135,7 +138,7 @@ void *handle_client(void *arg) {
     client_count++;
 
     // Send the client list to the new client
-    send_client_list(client_socket);
+    outputConnectedClients(client_socket);
 
     // Notify all clients about the new client
     notify_new_client(sender_name);
@@ -251,7 +254,7 @@ int main(int argc, char *argv[]) {
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_size);
 
         // Check if the chatroom is not full
-        if (client_count < MAX_CLIENTS) {
+        if (client_count < MAXIMUM_CONNECTED_CLIENTS) {
             // Create a new thread to handle the client
             pthread_create(&tid, NULL, handle_client, &client_socket);
             // create another new thread just for the helper stuff right here??
