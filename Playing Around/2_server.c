@@ -103,7 +103,7 @@ void newClientJoinedPush(char *senderName)
     char outboundPushNotification[BUFFER_SIZE];
 
     // Format the message indicating the new client's name
-    snprintf(outboundPushNotification, BUFFER_SIZE, "New client joined: %s\n", senderName);
+    snprintf(outboundPushNotification, BUFFER_SIZE, "<*> New client joined: %s <*>\n", senderName);
 
     // Iterate through all connected clients
     for (int i = 0; i < client_count; i++)
@@ -122,8 +122,9 @@ void talkWithHelperServer(char *dataSentToHelper, char *returnedDataFromHelper)
 }
 // **
 
+
 // Function that handles full communication with multiple clients *****
-void *handle_client(void *arg)
+void *clientThreadSplitFunction(void *arg)
 {
     // Extract the client socket from the argument
     int client_socket = *((int *)arg);
@@ -282,14 +283,14 @@ int main(int argc, char *argv[])
         if (client_count < MAXIMUM_CONNECTED_CLIENTS)
         {
             // Create a new thread to handle the client
-            pthread_create(&tid, NULL, handle_client, &client_socket);
+            pthread_create(&tid, NULL, clientThreadSplitFunction, &client_socket);
             // create another new thread just for the helper stuff right here??
-            // or maybe in the handle_client function???
+            // or maybe in the clientThreadSplitFunction function???
         }
         else
         {
             // Inform the client that the chatroom is full and close the connection
-            printf("Chatroom is full. Try again later.\n");
+            printf("Max number of participants reached, can't connect now.\n");
             close(client_socket);
         }
     }
