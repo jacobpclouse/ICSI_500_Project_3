@@ -1,0 +1,6 @@
+Logged in clients:
+jake
+New client joined: jake
+New client joined: mary
+[mary]=> HI JAKE
+sup mary

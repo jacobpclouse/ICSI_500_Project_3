@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-#define HELPER_PORT 8081
+#define HELPER_PORT 1996
 #define BUFFER_SIZE 2048
 
 int main() {

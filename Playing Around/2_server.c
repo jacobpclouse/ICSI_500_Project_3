@@ -18,7 +18,7 @@
 
 // here we have our info for our helper server
 #define HELPER_SERVER_IP "127.0.0.1"
-#define HELPER_SERVER_PORT 8081
+#define HELPER_SERVER_PORT 1996
 int helper_server_socket;
 
 
