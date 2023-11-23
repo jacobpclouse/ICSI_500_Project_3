@@ -19,8 +19,7 @@
 // here we have our info for our helper server
 #define HELPER_SERVER_IP "127.0.0.1"
 #define HELPER_SERVER_PORT 1996
-int helper_server_socket;
-
+int socketForHelperServer;
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Structs -- move to header if can
@@ -28,7 +27,8 @@ int helper_server_socket;
 
 // Structure to model client data on
 // Referenced code here: https://www.geeksforgeeks.org/structures-c/#
-struct organizedClientData {
+struct organizedClientData
+{
     int socket;
     char name[BUFFER_SIZE];
 };
@@ -36,7 +36,6 @@ struct organizedClientData {
 // creating struct
 struct organizedClientData clients[MAXIMUM_CONNECTED_CLIENTS];
 int client_count = 0;
-
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -56,36 +55,39 @@ void myLogo()
 
 // -- Function to send out list of already logged in clients to new client --
 // Source: https://stackoverflow.com/questions/41104762/sent-a-message-to-all-clients-with-c-programming
-void outputConnectedClients(int selectedClient) {
+void outputConnectedClients(int selectedClient)
+{
 
-    char listOfClients[BUFFER_SIZE]; // Create a buffer to store the list of clients
+    char listOfClients[BUFFER_SIZE];       // Create a buffer to store the list of clients
     memset(listOfClients, 0, BUFFER_SIZE); // Initialize the buffer with zeros
 
     // Loop through each logged-in client
-    for (int i = 0; i < client_count; i++) {
+    for (int i = 0; i < client_count; i++)
+    {
         // Concatenate the name of each client to the listOfClients buffer, followed by a newline
         strcat(listOfClients, clients[i].name);
         strcat(listOfClients, "\n");
     }
 
-    char communicationToSend[BUFFER_SIZE];// Create a buffer to store the final message to be sent
-    snprintf(communicationToSend, BUFFER_SIZE, "-=-=-=-=-=-=-=-=-\nCurrently logged in clients:\n%s-=-=-=-=-=-=-=-=-\n", listOfClients);// Format the message with the list of clients
-    send(selectedClient, communicationToSend, strlen(communicationToSend), 0);// Send the message to the specified client
+    char communicationToSend[BUFFER_SIZE];                                                                                               // Create a buffer to store the final message to be sent
+    snprintf(communicationToSend, BUFFER_SIZE, "-=-=-=-=-=-=-=-=-\nCurrently logged in clients:\n%s-=-=-=-=-=-=-=-=-\n", listOfClients); // Format the message with the list of clients
+    send(selectedClient, communicationToSend, strlen(communicationToSend), 0);                                                           // Send the message to the specified client
 }
-
-
 
 // -- Function to send out data to all connected clients
 // Source: https://stackoverflow.com/questions/41104762/sent-a-message-to-all-clients-with-c-programming
-void sendPublicMessage(char *message, int current_client, char *sender_name) {
-    
-    char outboundMessage[BUFFER_SIZE];// Create a buffer to store the formatted message
-    snprintf(outboundMessage, BUFFER_SIZE, "[%s]=> %s", sender_name, message); // Format the message with the sender's name
+void sendPublicMessage(char *inputData, int selectedClient, char *senderName)
+{
+
+    char outboundMessage[BUFFER_SIZE];                                         // Create a buffer to store the formatted message
+    snprintf(outboundMessage, BUFFER_SIZE, "[%s]=> %s", senderName, inputData); // Format the message with the sender's name
 
     // Iterate through all connected clients
-    for (int i = 0; i < client_count; i++) {
+    for (int i = 0; i < client_count; i++)
+    {
         // Check if the current client is not the one specified in the parameter
-        if (clients[i].socket != current_client) {
+        if (clients[i].socket != selectedClient)
+        {
             // Send the formatted message to the current client using its socket
             send(clients[i].socket, outboundMessage, strlen(outboundMessage), 0);
         }
@@ -94,36 +96,35 @@ void sendPublicMessage(char *message, int current_client, char *sender_name) {
 
 
 
-// Function to notify all existing clients about a new client
-void notify_new_client(char *sender_name) {
+// -- Function to let everyone know when a new client joins the server --
+void newClientJoinedPush(char *senderName)
+{
     // Create a buffer to store the new client message
-    char new_client_message[BUFFER_SIZE];
+    char outboundPushNotification[BUFFER_SIZE];
 
     // Format the message indicating the new client's name
-    snprintf(new_client_message, BUFFER_SIZE, "New client joined: %s\n", sender_name);
+    snprintf(outboundPushNotification, BUFFER_SIZE, "New client joined: %s\n", senderName);
 
     // Iterate through all connected clients
-    for (int i = 0; i < client_count; i++) {
+    for (int i = 0; i < client_count; i++)
+    {
         // Send the new client message to each client's socket
-        send(clients[i].socket, new_client_message, strlen(new_client_message), 0);
+        send(clients[i].socket, outboundPushNotification, strlen(outboundPushNotification), 0);
     }
 }
 
 // ****
 // Function to handle communication with the helper server
-void communicate_with_helper(char *message, char *result) {
-
-    // IS THIS RIGHT???
-
-    // int helper_server_socket; // Initialize this with the actual socket for the helper server
-    send(helper_server_socket, message, strlen(message), 0);
-    recv(helper_server_socket, result, BUFFER_SIZE, 0);
+void talkWithHelperServer(char *dataSentToHelper, char *returnedDataFromHelper)
+{
+    send(socketForHelperServer, dataSentToHelper, strlen(dataSentToHelper), 0);
+    recv(socketForHelperServer, returnedDataFromHelper, BUFFER_SIZE, 0);
 }
 // **
 
-
-// Function that handles full communication with multiple clients ***** 
-void *handle_client(void *arg) {
+// Function that handles full communication with multiple clients *****
+void *handle_client(void *arg)
+{
     // Extract the client socket from the argument
     int client_socket = *((int *)arg);
 
@@ -134,7 +135,8 @@ void *handle_client(void *arg) {
 
     // Receive the sender's name from the client
     bytes_received = recv(client_socket, sender_name, BUFFER_SIZE, 0);
-    if (bytes_received <= 0) {
+    if (bytes_received <= 0)
+    {
         // If unable to receive, close the socket and exit the thread
         close(client_socket);
         pthread_exit(NULL);
@@ -155,20 +157,25 @@ void *handle_client(void *arg) {
     outputConnectedClients(client_socket);
 
     // Notify all clients about the new client
-    notify_new_client(sender_name);
+    newClientJoinedPush(sender_name);
 
     // Main loop to handle client messages
-    while (1) {
+    while (1)
+    {
         // Receive a message from the client
         bytes_received = recv(client_socket, message, BUFFER_SIZE, 0);
-        if (bytes_received <= 0) {
+        if (bytes_received <= 0)
+        {
             // If client disconnected, close the socket and remove from the array
             close(client_socket);
 
             // Find the client in the array and remove it
-            for (int i = 0; i < client_count; i++) {
-                if (clients[i].socket == client_socket) {
-                    for (int j = i; j < client_count - 1; j++) {
+            for (int i = 0; i < client_count; i++)
+            {
+                if (clients[i].socket == client_socket)
+                {
+                    for (int j = i; j < client_count - 1; j++)
+                    {
                         clients[j] = clients[j + 1];
                     }
                     client_count--;
@@ -184,11 +191,10 @@ void *handle_client(void *arg) {
         // -----
         // Send the message to the helper server for processing
         char result[BUFFER_SIZE];
-        communicate_with_helper(message, result);
+        talkWithHelperServer(message, result);
 
         // send result to all clients
         sendPublicMessage(result, client_socket, sender_name);
-
     }
 
     return NULL;
@@ -197,9 +203,11 @@ void *handle_client(void *arg) {
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # MAIN
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     // Check if the correct number of command-line arguments is provided
-    if (argc != 3) {
+    if (argc != 3)
+    {
         printf("Correct usage: %s IP address Port number\n", argv[0]);
         exit(1);
     }
@@ -217,21 +225,26 @@ int main(int argc, char *argv[]) {
     server_addr.sin_port = htons(Port);
     server_addr.sin_addr.s_addr = inet_addr(IP_address);
 
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
         perror("Bind error");
         exit(1);
     }
 
-    if (listen(server_socket, 100) == 0) {
+    if (listen(server_socket, 100) == 0)
+    {
         printf("Listening on IP: %s on Port: %d ...\n", IP_address, Port);
-    } else {
+    }
+    else
+    {
         perror("Listen error");
         exit(1);
     }
     // --- main above, helper stuff below
     // Create a socket for the helper server
-    helper_server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (helper_server_socket == -1) {
+    socketForHelperServer = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketForHelperServer == -1)
+    {
         perror("Helper server socket creation error");
         exit(EXIT_FAILURE);
     }
@@ -240,38 +253,41 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in helper_server_addr;
     helper_server_addr.sin_family = AF_INET;
     helper_server_addr.sin_port = htons(HELPER_SERVER_PORT);
-    if (inet_pton(AF_INET, HELPER_SERVER_IP, &helper_server_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, HELPER_SERVER_IP, &helper_server_addr.sin_addr) <= 0)
+    {
         perror("Helper server address conversion error");
         exit(EXIT_FAILURE);
     }
 
     // Connect to the helper server
-    if (connect(helper_server_socket, (struct sockaddr *)&helper_server_addr, sizeof(helper_server_addr)) < 0) {
+    if (connect(socketForHelperServer, (struct sockaddr *)&helper_server_addr, sizeof(helper_server_addr)) < 0)
+    {
         perror("Helper server connection error");
         exit(EXIT_FAILURE);
     }
 
     printf("Connected to helper server\n");
 
-
     // ----
     // Set the size of the client address structure
     addr_size = sizeof(client_addr);
 
     // Main loop to accept incoming client connections
-    while (1) {
+    while (1)
+    {
         // Accept a client connection
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_size);
 
         // Check if the chatroom is not full
-        if (client_count < MAXIMUM_CONNECTED_CLIENTS) {
+        if (client_count < MAXIMUM_CONNECTED_CLIENTS)
+        {
             // Create a new thread to handle the client
             pthread_create(&tid, NULL, handle_client, &client_socket);
             // create another new thread just for the helper stuff right here??
             // or maybe in the handle_client function???
-
-            
-        } else {
+        }
+        else
+        {
             // Inform the client that the chatroom is full and close the connection
             printf("Chatroom is full. Try again later.\n");
             close(client_socket);
