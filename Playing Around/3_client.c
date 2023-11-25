@@ -1,3 +1,6 @@
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Importing Libraries / Modules / Headers
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "encDec.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,38 +11,55 @@
 #include <sys/select.h>
 #include <time.h>
 
+
+// constants
 #define BUFFER_SIZE 2048
 
-char* createFileName(const char* username) {
-    time_t current_time;
-    struct tm* time_info;
-    char* filename = (char*)malloc(64); // Adjust the size as needed
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Functions
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-    if (filename == NULL) {
-        perror("Memory allocation error");
+// -- Function to create a text file to store the correspondence between the two clients
+// I wanted this to be the two users, but i can't do that at this time
+// source: https://stackoverflow.com/questions/5141960/get-the-current-time-in-c
+char* createFileName(const char* username) {
+    time_t currentTime;
+    struct tm* timeDataBoi;
+    char* filenameBoi = (char*)malloc(64);
+
+    if (filenameBoi == NULL) {
+        perror("ERROR: issue with Mem. Allocation.\n");
         exit(1);
     }
 
-    time(&current_time);
-    time_info = localtime(&current_time);
+    time(&currentTime);
+    timeDataBoi = localtime(&currentTime);
 
-    snprintf(filename, 64, "%s_%04d%02d%02d_%02d%02d%02d.txt",
+    // source: https://stackoverflow.com/questions/5141960/get-the-current-time-in-c
+    snprintf(filenameBoi, 64, "%s_%04d%02d%02d_%02d%02d%02d.txt",
         username,
-        time_info->tm_year + 1900,
-        time_info->tm_mon + 1,
-        time_info->tm_mday,
-        time_info->tm_hour,
-        time_info->tm_min,
-        time_info->tm_sec);
+        timeDataBoi->tm_year + 1900,
+        timeDataBoi->tm_mon + 1,
+        timeDataBoi->tm_mday,
+        timeDataBoi->tm_hour,
+        timeDataBoi->tm_min,
+        timeDataBoi->tm_sec);
 
-    return filename;
+    return filenameBoi;
 }
 
-void writeMessageToFile(FILE* outputFile, const char* message) {
-    fprintf(outputFile, "%s", message);
-    fflush(outputFile); // Ensure the data is written immediately
+
+// -- Function used to update our .txt file conversation history immediatly after each message
+// Source: https://www.geeksforgeeks.org/use-fflushstdin-c/
+void writeMessageToFile(FILE* outputFile, const char* dataToWriteToFile) {
+    fprintf(outputFile, "%s", dataToWriteToFile);
+    fflush(outputFile);
 }
 
+
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # MAIN
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         printf("Correct usage: %s IP address Port number\n", argv[0]);
