@@ -33,6 +33,20 @@ void myLogo()
     printf("¡¡Dedicated to Peter Zlomek and Harely Alderson III!!\n\n");
 }
 
+// -- Function to print out when the server connects to the helper --
+void serverConnected(){
+    printf("┏┓            ┏┓             ┓\n");
+    printf("┗┓┏┓┏┓┓┏┏┓┏┓  ┃ ┏┓┏┓┏┓┏┓┏╋┏┓┏┫\n");
+    printf("┗┛┗ ┛ ┗┛┗ ┛   ┗┛┗┛┛┗┛┗┗ ┗┗┗ ┗┻\n");
+}
+
+// -- Function to print out when the server disconnects from the helper --
+void connectionTerminated() {
+    printf("┏┓          •      ┏┳┓       •        ┓\n");
+    printf("┃ ┏┓┏┓┏┓┏┓┏╋┓┏┓┏┓   ┃ ┏┓┏┓┏┳┓┓┏┓┏┓╋┏┓┏┫\n");
+    printf("┗┛┗┛┛┗┛┗┗ ┗┗┗┗┛┛┗   ┻ ┗ ┛ ┛┗┗┗┛┗┗┻┗┗ ┗┻\n");
+}
+
 
 // -- Function to read simple characters - no binary --
 // help from https://stackoverflow.com/questions/3501338/c-read-file-line-by-line

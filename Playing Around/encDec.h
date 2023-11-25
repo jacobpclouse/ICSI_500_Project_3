@@ -22,34 +22,35 @@
 // # Dataframe Setup
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-// Structure for the encDecFrame to send back and forth
-// Referenced code here: https://www.geeksforgeeks.org/structures-c/#
-struct Send_data_pack {
-    int client_id;
-    char message[MAX_MESSAGE_LENGTH];
-};
+// // Structure for the encDecFrame to send back and forth
+// // Referenced code here: https://www.geeksforgeeks.org/structures-c/#
+// struct Send_data_pack {
+//     int client_id;
+//     char message[MAX_MESSAGE_LENGTH];
+// };
 
 
 
-struct encDecFrame
-{
-    char syn1;       // first SYN character (ASCII 22)
-    char syn2;       // second SYN character (ASCII 22)
-    uint8_t control; // control char to show length of data block (1 to 512)
-    char parity;     // parity bit
-    char data[512];  // max 64 data characters - 512 binary characters
-};
+// struct encDecFrame
+// {
+//     char syn1;       // first SYN character (ASCII 22)
+//     char syn2;       // second SYN character (ASCII 22)
+//     uint8_t control; // control char to show length of data block (1 to 512)
+//     char parity;     // parity bit
+//     char data[512];  // max 64 data characters - 512 binary characters
+// };
 
 
 // Function declarations
-// int add(int a, int b);
 void myLogo();
+
+void serverConnected();
+
+void connectionTerminated();
 
 char *readSimpleCharactersFunc(const char *fileToRead);
 
 void outputStringToFile(const char *stringToSave, const char *nameOfOutputFile);
 
-// Constant macro
-// #define PI 3.14159265
 
 #endif

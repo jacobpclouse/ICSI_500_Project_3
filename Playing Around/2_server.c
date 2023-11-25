@@ -69,7 +69,7 @@ void outputConnectedClients(int selectedClient)
 void sendPublicMessage(char *inputData, int selectedClient, char *senderName)
 {
 
-    char outboundMessage[BUFFER_SIZE];                                         // Create a buffer to store the formatted message
+    char outboundMessage[BUFFER_SIZE];                                          // Create a buffer to store the formatted message
     snprintf(outboundMessage, BUFFER_SIZE, "[%s]=> %s", senderName, inputData); // Format the message with the sender's name
 
     // Iterate through all connected clients
@@ -83,8 +83,6 @@ void sendPublicMessage(char *inputData, int selectedClient, char *senderName)
         }
     }
 }
-
-
 
 // -- Function to let everyone know when a new client joins the server --
 void newClientJoinedPush(char *senderName)
@@ -111,7 +109,6 @@ void talkWithHelperServer(char *dataSentToHelper, char *returnedDataFromHelper)
     recv(socketForHelperServer, returnedDataFromHelper, BUFFER_SIZE, 0);
 }
 // **
-
 
 // Function that handles full communication with multiple clients *****
 void *clientThreadSplitFunction(void *arg)
@@ -180,12 +177,15 @@ void *clientThreadSplitFunction(void *arg)
         message[bytes_received] = '\0';
 
         // -----
-        // Send the message to the helper server for processing
+        // send the message to the helper server for processing
         char result[BUFFER_SIZE];
         talkWithHelperServer(message, result);
 
         // send result to all clients
         sendPublicMessage(result, client_socket, sender_name);
+        // clear out result
+        memset(result, 0, BUFFER_SIZE);
+        // result[bytes_received] = '\0'; // ?? this should work
     }
 
     return NULL;
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 
     if (listen(server_socket, 100) == 0)
     {
-        printf("Listening on IP: %s on Port: %d ...\n", IP_address, Port);
+        printf("2_server listening on IP: %s on Port: %d ...\n", IP_address, Port);
     }
     else
     {

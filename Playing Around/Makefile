@@ -12,13 +12,13 @@ SAMPLE = sampleThreads
 all: $(HELPER) $(SERVER) $(CLIENT)
 
 $(SERVER): $(SERVER_SRC)
-	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER).c $(LIBS)
+	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER).c $(LIBS) 
 
 $(CLIENT): $(CLIENT_SRC)
 	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT).c 
 
 $(HELPER): $(HELPER).c
-	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c
+	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c $(LIBS) $(FUNC)
 
 $(SAMPLE): $(SAMPLE).c
 	$(CC) $(CFLAGS) -o $(SAMPLE) $(SAMPLE).c $(LIBS)
