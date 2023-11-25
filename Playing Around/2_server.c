@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
         {
             // Inform the client that the chatroom is full and close the connection
             printf("Max number of participants reached, can't connect now.\n");
-            close(client_socket);
+            close(client_socket); // close client socket
         }
     }
 
