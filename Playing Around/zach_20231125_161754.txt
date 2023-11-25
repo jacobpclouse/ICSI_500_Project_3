@@ -1,0 +1,12 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+zach
+-=-=-=-=-=-=-=-=-
+<*> New client joined: zach <*>
+hey jake
+[jake]=> HEY ZACH
+i dont know why we have to keep testing this
+[jake]=> BECAUSE WE WANT TO PASS
+oh yeah
+forgot
