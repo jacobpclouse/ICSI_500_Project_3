@@ -24,4 +24,5 @@ nodes will be encoded according to the format defined in project-2
 # figure out how to do a three way (ie: client -> server -> helper)
 
 ## Resources Used: 
-- 
+- Convert Uppercase to Lowercase in C: https://www.javatpoint.com/convert-uppercase-to-lowercase-in-c
+
