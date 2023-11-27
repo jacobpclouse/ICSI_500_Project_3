@@ -1,8 +1,7 @@
 -=-=-=-=-=-=-=-=-
 Currently logged in clients:
 jake
-mary
+jim
 -=-=-=-=-=-=-=-=-
-<*> New client joined: mary <*>
-jake
-[jake]=> YEH
+<*> New client joined: jim <*>
+feawff

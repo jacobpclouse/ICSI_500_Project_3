@@ -12,45 +12,17 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 
+
 // constants
 #define HELPER_PORT 1996
 #define BUFFER_SIZE 2048
 #define NUM_THREADS 5
-
-char dataToConvert[30];
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-// # Functions
-// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-// -- Function to convert a specific vowel to uppercase --
-void *convertVowelToUppercase(void *arg) {
-    char vowel = *((char *)arg);
-
-    pthread_mutex_lock(&mutex);
-    for (int i = 0; i < strlen(dataToConvert); i++) {
-        if (dataToConvert[i] == vowel || dataToConvert[i] == (vowel - 32)) {
-            dataToConvert[i] = dataToConvert[i] - 32; // Convert to uppercase
-        }
-    }
-    pthread_mutex_unlock(&mutex);
-
-    pthread_exit(NULL);
-}
+// #define HELPER_SERVER_IP "127.0.0.1" // can't use this right now
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # MAIN
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 int main() {
-    pthread_t threads[NUM_THREADS];
-    char vowels[NUM_THREADS] = {'a', 'e', 'i', 'o', 'u'};
-
-    // Create threads for each vowel
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_create(&threads[i], NULL, convertVowelToUppercase, (void *)&vowels[i]);
-    }
-
     int helper_socket;
     struct sockaddr_in helper_addr, server_addr;
     socklen_t addr_size = sizeof(server_addr);
@@ -65,6 +37,7 @@ int main() {
     // Configure helper server address
     helper_addr.sin_family = AF_INET;
     helper_addr.sin_port = htons(HELPER_PORT);
+    // helper_addr.sin_addr.s_addr = HELPER_SERVER_IP;
     helper_addr.sin_addr.s_addr = INADDR_ANY;
 
     // Bind the helper socket
@@ -81,8 +54,9 @@ int main() {
 
     myLogo(); // startup print outs
     printf("1_helper node listening on IP: %s on Port %d...\n", INADDR_ANY, HELPER_PORT);
+    
 
-        // Accept a connection from the main server
+    // Accept a connection from the main server
     int server_socket = accept(helper_socket, (struct sockaddr*)&server_addr, &addr_size);
     if (server_socket == -1) {
         perror("ERROR: Experienced issue accepting connection!");
@@ -93,34 +67,25 @@ int main() {
 
     // Main loop to handle communication with the main server
     while (1) {
-        // Reset the dataToConvert array for each new message
-        memset(dataToConvert, 0, sizeof(dataToConvert));
-
         char message[BUFFER_SIZE];
         int bytes_received = recv(server_socket, message, BUFFER_SIZE, 0);
         if (bytes_received <= 0) {
             connectionTerminated();
             break;
         } else {
-            printf("Data request received! :D\n");
+            printf("Data request recieved! :D\n");
+        }
 
-            // Convert vowels to uppercase using threads
-            for (int i = 0; i < NUM_THREADS; i++) {
-                pthread_join(threads[i], NULL);
-            }
-
-            printf("Done Recieving.. \n\n");
+        // Convert the received message to uppercase
+        for (int i = 0; i < bytes_received; i++) {
+            message[i] = toupper(message[i]);
         }
 
         // Send the uppercase message back to the main server
-        send(server_socket, dataToConvert, bytes_received, 0);
+        send(server_socket, message, bytes_received, 0);
     }
 
-    // Join threads and close sockets for cleanup
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(threads[i], NULL);
-    }
-
+    // close sockets for cleanup
     close(server_socket);
     close(helper_socket);
 

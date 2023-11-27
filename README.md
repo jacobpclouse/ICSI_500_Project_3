@@ -25,4 +25,5 @@ nodes will be encoded according to the format defined in project-2
 
 ## Resources Used: 
 - Convert Uppercase to Lowercase in C: https://www.javatpoint.com/convert-uppercase-to-lowercase-in-c
-
+- Working and creating threads in C but am running into a problem with the argument type: https://stackoverflow.com/questions/71230931/working-and-creating-threads-in-c-but-am-running-into-a-problem-with-the-argumen
+- 
