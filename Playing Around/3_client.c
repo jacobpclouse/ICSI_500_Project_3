@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     char outgoingDatastream[BUFFER_SIZE];
     char nameOfClient[BUFFER_SIZE];
 
-    // binding...
+    // connection type + family
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(portno);

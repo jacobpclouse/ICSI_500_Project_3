@@ -35,16 +35,18 @@ void myLogo()
 
 // -- Function to print out when the server connects to the helper --
 void serverConnected(){
-    printf("┏┓            ┏┓             ┓\n");
-    printf("┗┓┏┓┏┓┓┏┏┓┏┓  ┃ ┏┓┏┓┏┓┏┓┏╋┏┓┏┫\n");
-    printf("┗┛┗ ┛ ┗┛┗ ┛   ┗┛┗┛┛┗┛┗┗ ┗┗┗ ┗┻\n");
+    printf("SERVER CONNECTED");
+    // printf("┏┓            ┏┓             ┓\n");
+    // printf("┗┓┏┓┏┓┓┏┏┓┏┓  ┃ ┏┓┏┓┏┓┏┓┏╋┏┓┏┫\n");
+    // printf("┗┛┗ ┛ ┗┛┗ ┛   ┗┛┗┛┛┗┛┗┗ ┗┗┗ ┗┻\n");
 }
 
 // -- Function to print out when the server disconnects from the helper --
 void connectionTerminated() {
-    printf("┏┓          •      ┏┳┓       •        ┓\n");
-    printf("┃ ┏┓┏┓┏┓┏┓┏╋┓┏┓┏┓   ┃ ┏┓┏┓┏┳┓┓┏┓┏┓╋┏┓┏┫\n");
-    printf("┗┛┗┛┛┗┛┗┗ ┗┗┗┗┛┛┗   ┻ ┗ ┛ ┛┗┗┗┛┗┗┻┗┗ ┗┻\n");
+    printf("CONNECTION TERMINATED...");
+    // printf("┏┓          •      ┏┳┓       •        ┓\n");
+    // printf("┃ ┏┓┏┓┏┓┏┓┏╋┓┏┓┏┓   ┃ ┏┓┏┓┏┳┓┓┏┓┏┓╋┏┓┏┫\n");
+    // printf("┗┛┗┛┛┗┛┗┗ ┗┗┗┗┛┛┗   ┻ ┗ ┛ ┛┗┗┗┛┗┗┻┗┗ ┗┻\n");
 }
 
 

@@ -188,11 +188,13 @@ int main(int argc, char *argv[])
     char *runServerOnThisIP = argv[1];
     int portno = atoi(argv[2]);
 
+    // setup server and client socket + connections
     int server_socket, client_socket;
     struct sockaddr_in server_addr, client_addr;
     socklen_t addr_size;
     pthread_t tid;
 
+    // setup for binding/connection type
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(portno);
