@@ -12,10 +12,10 @@ CLIENT = 3_client
 all: $(HELPER) $(SERVER) $(CLIENT)
 
 $(SERVER): $(SERVER_SRC)
-	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER).c $(LIBS) $(FUNC)
+	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER).c $(LIBS) 
 
 $(CLIENT): $(CLIENT_SRC)
-	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT).c $(FUNC)
+	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT).c 
 
 $(HELPER): $(HELPER).c
 	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c $(LIBS) $(FUNC)

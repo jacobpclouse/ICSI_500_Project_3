@@ -1,44 +1,47 @@
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # encDec.h Importing Libraries / Modules / Headers 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-// for client/server:
+// for client/server/helper:
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <arpa/inet.h>
-
-
-// - orig below
 #include <stdint.h>
 
+
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Constants
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #ifndef SETUPHEADER_H
 #define SETUPHEADER_H
 
-#define MAX_MESSAGE_LENGTH 1024
+#define BUFFER_SIZE 2048 // buffers for helper, server and client
+#define HELPER_SERVER_PORT 1996 // the port that the helper server will run on - used in both helper and server
+#define HELPER_SERVER_IP "127.0.0.1" // IP that the helper server will run on, used primarily in server, might use in helper later
+#define MAXIMUM_CONNECTED_CLIENTS 6 // server max number of allowed clients!
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-// # Dataframe Setup
+// # Structs
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-// // Structure for the encDecFrame to send back and forth
-// // Referenced code here: https://www.geeksforgeeks.org/structures-c/#
-// struct Send_data_pack {
-//     int client_id;
-//     char message[MAX_MESSAGE_LENGTH];
-// };
+// -- Struct to pass data to each thread for uppercasing -- 1_helper.c
+// Referenced code here: https://www.geeksforgeeks.org/structures-c/#
+typedef struct
+{
+    int thread_id;
+} TheadsForAIEOU;
 
 
+// Structure to organize client data - 2_server.c
+// Referenced code here: https://www.geeksforgeeks.org/structures-c/#
+struct organizedClientData
+{
+    int socket;
+    char name[BUFFER_SIZE];
+};
 
-// struct encDecFrame
-// {
-//     char syn1;       // first SYN character (ASCII 22)
-//     char syn2;       // second SYN character (ASCII 22)
-//     uint8_t control; // control char to show length of data block (1 to 512)
-//     char parity;     // parity bit
-//     char data[512];  // max 64 data characters - 512 binary characters
-// };
 
 
 // Function declarations
@@ -48,9 +51,6 @@ void serverConnected();
 
 void connectionTerminated();
 
-char *readSimpleCharactersFunc(const char *fileToRead);
-
-void outputStringToFile(const char *stringToSave, const char *nameOfOutputFile);
 
 
 #endif

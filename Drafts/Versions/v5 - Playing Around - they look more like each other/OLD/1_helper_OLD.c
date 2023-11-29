@@ -12,9 +12,24 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 
+// constants
+#define HELPER_PORT 1996
+#define BUFFER_SIZE 2048
+// #define NUM_THREADS 5
+// #define HELPER_SERVER_IP "127.0.0.1" // can't use this right now
 
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data
 pthread_mutex_t mutex;
+
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Structs -- move to header if can
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+// -- Struct to pass data to each thread for uppercasing --
+typedef struct
+{
+    int thread_id;
+} TheadsForAIEOU;
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -41,7 +56,7 @@ void *toUpperThreadingFunc(void *arg)
                 uppercasedBuffer[i] = 'A';
             }
         }
-        printf("charA thread output string: %s\n", uppercasedBuffer);
+        // printf("charA thread output string: %s\n", uppercasedBuffer);
 
         break;
     case 2:
@@ -53,7 +68,7 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charE thread output string: %s\n", uppercasedBuffer);
+        // printf("charE thread output string: %s\n", uppercasedBuffer);
         break;
     case 3:
         for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
@@ -64,7 +79,7 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charO thread output string: %s\n", uppercasedBuffer);
+        // printf("charO thread output string: %s\n", uppercasedBuffer);
         break;
     case 4:
         for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
@@ -75,7 +90,7 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charI thread output string: %s\n", uppercasedBuffer);
+        // printf("charI thread output string: %s\n", uppercasedBuffer);
         break;
     case 5:
         for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
@@ -86,14 +101,14 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charU thread output string: %s\n", uppercasedBuffer);
+        // printf("charU thread output string: %s\n", uppercasedBuffer);
         break;
     default:
         break;
     }
 
     pthread_mutex_unlock(&mutex); // unlock
-    // printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
+    printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
 
     // iterate through and pass data from string to string
     if (inputDataStreamToUppercase->thread_id < 5) // queue here
@@ -116,41 +131,48 @@ int main()
     struct sockaddr_in helper_addr, server_addr;
     socklen_t addr_size = sizeof(server_addr);
 
-    // create socket, configure connection type
+    // Create socket for the helper server
     helperSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (helperSocket == -1)
+    {
+        perror("ERROR: Failed to create helper socket!");
+        exit(EXIT_FAILURE);
+    }
+
+    // Configure helper server address
     helper_addr.sin_family = AF_INET;
-    helper_addr.sin_port = htons(HELPER_SERVER_PORT);
+    helper_addr.sin_port = htons(HELPER_PORT);
     // helper_addr.sin_addr.s_addr = HELPER_SERVER_IP;
     helper_addr.sin_addr.s_addr = INADDR_ANY;
 
-    // bind socket
+    // Bind the helper socket
     if (bind(helperSocket, (struct sockaddr *)&helper_addr, sizeof(helper_addr)) == -1)
     {
         perror("ERROR: Issue with binding!");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    // listen for connections
+    // Listen for connections from the main server
     if (listen(helperSocket, 1) == -1)
     {
         perror("ERROR: Issue with listening!");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     myLogo(); // startup print outs
-    printf("1_helper node listening on IP: %s on Port %d...\n", INADDR_ANY, HELPER_SERVER_PORT);
+    printf("1_helper node listening on IP: %s on Port %d...\n", INADDR_ANY, HELPER_PORT);
 
-    // accept incoming connections
+    // Accept a connection from the main server
     int server_socket = accept(helperSocket, (struct sockaddr *)&server_addr, &addr_size);
     if (server_socket == -1)
     {
         perror("ERROR: Experienced issue accepting connection!");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     serverConnected(); // shows main 2_server has connected
 
-    // main communication loop
+    // Main loop to handle communication with the main server
     while (1)
     {
         char datastreamFromMainServer[BUFFER_SIZE];
@@ -162,8 +184,7 @@ int main()
         }
         else
         {
-            printf("\n=> DATA REQUEST RECIEVED!\n");
-            // printf("\nData request recieved! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
+            printf("\nData request recieved! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
         }
 
         // -----

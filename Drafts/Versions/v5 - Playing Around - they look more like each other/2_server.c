@@ -14,10 +14,28 @@
 #include <pthread.h>
 #include <time.h>
 
+// constants for the server / client
+#define MAXIMUM_CONNECTED_CLIENTS 6
+#define BUFFER_SIZE 2048
+
+// here we have our info for our helper server
+#define HELPER_SERVER_IP "127.0.0.1"
+#define HELPER_SERVER_PORT 1996
 int socketForHelperServer;
 
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Structs -- move to header if can
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-// creating struct for clients
+// Structure to model client data on
+// Referenced code here: https://www.geeksforgeeks.org/structures-c/#
+struct organizedClientData
+{
+    int socket;
+    char name[BUFFER_SIZE];
+};
+
+// creating struct
 struct organizedClientData clients[MAXIMUM_CONNECTED_CLIENTS];
 int client_count = 0;
 
