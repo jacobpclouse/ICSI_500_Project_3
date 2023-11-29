@@ -199,12 +199,12 @@ int main(int argc, char *argv[])
     // Check if the correct number of command-line arguments is provided
     if (argc != 3)
     {
-        printf("ERROR: Correct usage is as follows: %s IP address Port number\n", argv[0]);
+        printf("Correct usage: %s IP address Port number\n", argv[0]);
         exit(1);
     }
 
-    char *runServerOnThisIP = argv[1];
-    int portno = atoi(argv[2]);
+    char *IP_address = argv[1];
+    int Port = atoi(argv[2]);
 
     int server_socket, client_socket;
     struct sockaddr_in server_addr, client_addr;
@@ -213,24 +213,22 @@ int main(int argc, char *argv[])
 
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(portno);
-    server_addr.sin_addr.s_addr = inet_addr(runServerOnThisIP);
+    server_addr.sin_port = htons(Port);
+    server_addr.sin_addr.s_addr = inet_addr(IP_address);
 
-    // bind socket
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
-        perror("ERROR: Issue with binding!");
+        perror("Bind error");
         exit(1);
     }
 
-    // start listening on, error if issue
     if (listen(server_socket, 100) == 0)
     {
-        printf("2_server listening on IP: %s on Port: %d ...\n", runServerOnThisIP, portno);
+        printf("2_server listening on IP: %s on Port: %d ...\n", IP_address, Port);
     }
     else
     {
-        perror("ERROR: Issue with listening!");
+        perror("Listen error");
         exit(1);
     }
     // --- main above, helper stuff below
@@ -238,8 +236,8 @@ int main(int argc, char *argv[])
     socketForHelperServer = socket(AF_INET, SOCK_STREAM, 0);
     if (socketForHelperServer == -1)
     {
-        perror("ERROR: Helper server socket creation error!");
-        exit(1);
+        perror("Helper server socket creation error");
+        exit(EXIT_FAILURE);
     }
 
     // Configure the helper server address
@@ -248,36 +246,40 @@ int main(int argc, char *argv[])
     helper_server_addr.sin_port = htons(HELPER_SERVER_PORT);
     if (inet_pton(AF_INET, HELPER_SERVER_IP, &helper_server_addr.sin_addr) <= 0)
     {
-        perror("ERROR: Helper server address conversion error");
-        exit(1);
+        perror("Helper server address conversion error");
+        exit(EXIT_FAILURE);
     }
 
     // Connect to the helper server
     if (connect(socketForHelperServer, (struct sockaddr *)&helper_server_addr, sizeof(helper_server_addr)) < 0)
     {
-        perror("ERROR: Helper server connection error");
-        exit(1);
+        perror("Helper server connection error");
+        exit(EXIT_FAILURE);
     }
 
     printf("Connected to helper server\n");
 
     // ----
-    addr_size = sizeof(client_addr); 
+    // Set the size of the client address structure
+    addr_size = sizeof(client_addr);
 
-    // main communication loop
+    // Main loop to accept incoming client connections
     while (1)
     {
-        client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connenctions
-        if (client_count < MAXIMUM_CONNECTED_CLIENTS) // make sure not full
+        // Accept a client connection
+        client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_size);
+
+        // Check if the chatroom is not full
+        if (client_count < MAXIMUM_CONNECTED_CLIENTS)
         {
-            // new thread created for each client
+            // Create a new thread to handle the client
             pthread_create(&tid, NULL, clientThreadSplitFunction, &client_socket);
             // create another new thread just for the helper stuff right here??
             // or maybe in the clientThreadSplitFunction function???
         }
         else
         {
-            // print if max num of client reached!
+            // Inform the client that the chatroom is full and close the connection
             printf("Max number of participants reached, can't connect now.\n");
             close(client_socket); // close client socket
         }

@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     // make sure that the user provides Correct data to start the server
     if (argc != 3)
     {
-        printf("ERROR: Correct usage is as follows: %s IP address Port number\n", argv[0]);
+        printf("ERROR: Correct execution is as follow: %s IP address Port number\n", argv[0]);
         exit(1);
     }
 

@@ -12,14 +12,13 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 
-
 // constants
 #define HELPER_PORT 1996
 #define BUFFER_SIZE 2048
-#define NUM_THREADS 5
+// #define NUM_THREADS 5
 // #define HELPER_SERVER_IP "127.0.0.1" // can't use this right now
 
-char sharedBuffer[BUFFER_SIZE];
+char uppercasedBuffer[BUFFER_SIZE]; // to store thread data
 pthread_mutex_t mutex;
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -27,176 +26,199 @@ pthread_mutex_t mutex;
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 // -- Struct to pass data to each thread for uppercasing --
-typedef struct {
+typedef struct
+{
     int thread_id;
-} ThreadData;
+} TheadsForAIEOU;
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-// Thread function
-void *threadFunction(void *arg) {
-    ThreadData *data = (ThreadData *)arg;
+// -- Function to create threads to break up and uppercase the input string
+// Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
+// Source 2: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
+void *toUpperThreadingFunc(void *arg)
+{
+    TheadsForAIEOU *inputDataStreamToUppercase = (TheadsForAIEOU *)arg;
 
-    // Lock the mutex to access the shared buffer
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex); // lock the mutex so we can access the shared buffer
 
-    // Perform transformations based on the thread ID
-    switch (data->thread_id) {
-        case 1:
-            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
-                if (sharedBuffer[i] == 'a') {
-                    sharedBuffer[i] = 'A';
-                }
+    // we uppercase based on thread id, pass data between them
+    // Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
+    switch (inputDataStreamToUppercase->thread_id)
+    {
+    case 1:
+        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
+        {
+            if (uppercasedBuffer[i] == 'a')
+            {
+                uppercasedBuffer[i] = 'A';
             }
-            break;
-        case 2:
-            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
-                if (sharedBuffer[i] == 'e') {
-                    sharedBuffer[i] = 'E';
-                }
+        }
+        // printf("charA thread output string: %s\n", uppercasedBuffer);
+
+        break;
+    case 2:
+        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
+        {
+            if (uppercasedBuffer[i] == 'e')
+            {
+                uppercasedBuffer[i] = 'E';
             }
-            break;
-        case 3:
-            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
-                if (sharedBuffer[i] == 'o') {
-                    sharedBuffer[i] = 'O';
-                }
+        }
+
+        // printf("charE thread output string: %s\n", uppercasedBuffer);
+        break;
+    case 3:
+        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
+        {
+            if (uppercasedBuffer[i] == 'o')
+            {
+                uppercasedBuffer[i] = 'O';
             }
-            break;
-        case 4:
-            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
-                if (sharedBuffer[i] == 'i') {
-                    sharedBuffer[i] = 'I';
-                }
+        }
+
+        // printf("charO thread output string: %s\n", uppercasedBuffer);
+        break;
+    case 4:
+        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
+        {
+            if (uppercasedBuffer[i] == 'i')
+            {
+                uppercasedBuffer[i] = 'I';
             }
-            break;
-        case 5:
-            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
-                if (sharedBuffer[i] == 'u') {
-                    sharedBuffer[i] = 'U';
-                }
+        }
+
+        // printf("charI thread output string: %s\n", uppercasedBuffer);
+        break;
+    case 5:
+        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
+        {
+            if (uppercasedBuffer[i] == 'u')
+            {
+                uppercasedBuffer[i] = 'U';
             }
-            break;
-        default:
-            break;
+        }
+
+        // printf("charU thread output string: %s\n", uppercasedBuffer);
+        break;
+    default:
+        break;
     }
 
-    // Unlock the mutex
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex); // unlock
+    printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
 
-    // Print the result
-    printf("Thread %d: Transformed string: %s\n", data->thread_id, sharedBuffer);
-
-    // Pass the transformed string to the next thread
-    if (data->thread_id < 5) {
-        ThreadData nextThreadData = {data->thread_id + 1};
+    // iterate through and pass data from string to string
+    if (inputDataStreamToUppercase->thread_id < 5) // queue here
+    {
+        TheadsForAIEOU nextThreadData = {inputDataStreamToUppercase->thread_id + 1};
         pthread_t nextThread;
-        pthread_create(&nextThread, NULL, threadFunction, &nextThreadData);
+        pthread_create(&nextThread, NULL, toUpperThreadingFunc, &nextThreadData);
         pthread_join(nextThread, NULL);
     }
 
     pthread_exit(NULL);
 }
 
-
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # MAIN
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-int main() {
-    int helper_socket;
+int main()
+{
+    int helperSocket;
     struct sockaddr_in helper_addr, server_addr;
     socklen_t addr_size = sizeof(server_addr);
 
-    // Create socket for the helper server
-    helper_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (helper_socket == -1) {
-        perror("ERROR: Failed to create helper socket!");
-        exit(EXIT_FAILURE);
-    }
-
-    // Configure helper server address
+    // create socket, configure connection type
+    helperSocket = socket(AF_INET, SOCK_STREAM, 0);
     helper_addr.sin_family = AF_INET;
     helper_addr.sin_port = htons(HELPER_PORT);
     // helper_addr.sin_addr.s_addr = HELPER_SERVER_IP;
     helper_addr.sin_addr.s_addr = INADDR_ANY;
 
-    // Bind the helper socket
-    if (bind(helper_socket, (struct sockaddr*)&helper_addr, sizeof(helper_addr)) == -1) {
+    // bind socket
+    if (bind(helperSocket, (struct sockaddr *)&helper_addr, sizeof(helper_addr)) == -1)
+    {
         perror("ERROR: Issue with binding!");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
-    // Listen for connections from the main server
-    if (listen(helper_socket, 1) == -1) {
+    // listen for connections
+    if (listen(helperSocket, 1) == -1)
+    {
         perror("ERROR: Issue with listening!");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     myLogo(); // startup print outs
     printf("1_helper node listening on IP: %s on Port %d...\n", INADDR_ANY, HELPER_PORT);
-    
 
-    // Accept a connection from the main server
-    int server_socket = accept(helper_socket, (struct sockaddr*)&server_addr, &addr_size);
-    if (server_socket == -1) {
+    // accept incoming connections
+    int server_socket = accept(helperSocket, (struct sockaddr *)&server_addr, &addr_size);
+    if (server_socket == -1)
+    {
         perror("ERROR: Experienced issue accepting connection!");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     serverConnected(); // shows main 2_server has connected
 
-    // Main loop to handle communication with the main server
-    while (1) {
-        char message[BUFFER_SIZE];
-        int bytes_received = recv(server_socket, message, BUFFER_SIZE, 0);
-        if (bytes_received <= 0) {
+    // main communication loop
+    while (1)
+    {
+        char datastreamFromMainServer[BUFFER_SIZE];
+        int bytes_received = recv(server_socket, datastreamFromMainServer, BUFFER_SIZE, 0);
+        if (bytes_received <= 0)
+        {
             connectionTerminated();
             break;
-        } else {
-            printf("Data request recieved! :D\n");
+        }
+        else
+        {
+            printf("\nData request recieved! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
         }
 
-        pthread_mutex_init(&mutex, NULL);// initialize 
+        // -----
+        // USE THREADING TO UPPERCASE DATA - Start!
+        // -----
 
-        // MAYBE COPY MESSAGE INTO THE SERVER STUFF
+        pthread_mutex_init(&mutex, NULL); // initialize
+
 
         // Lock the mutex to access the shared buffer
         pthread_mutex_lock(&mutex);
 
-            // Copy the server data to the shared buffer
-        strncpy(sharedBuffer, message, BUFFER_SIZE - 1);
-        sharedBuffer[BUFFER_SIZE - 1] = '\0';
+        // Copy the server data to the shared buffer
+        strncpy(uppercasedBuffer, datastreamFromMainServer, BUFFER_SIZE - 1);
+        uppercasedBuffer[BUFFER_SIZE - 1] = '\0';
 
         // Unlock the mutex
         pthread_mutex_unlock(&mutex);
 
         // Create the first thread
-        ThreadData firstThreadData = {1};
+        TheadsForAIEOU firstThreadData = {1};
         pthread_t firstThread;
-        pthread_create(&firstThread, NULL, threadFunction, &firstThreadData);
+        pthread_create(&firstThread, NULL, toUpperThreadingFunc, &firstThreadData);
         pthread_join(firstThread, NULL);
 
         // Destroy mutex
         pthread_mutex_destroy(&mutex);
 
-        // Send the uppercase message back to the main server
-        send(server_socket, sharedBuffer, bytes_received, 0);
+        // -----
+        // USE THREADING TO UPPERCASE DATA - End!
+        // -----
+
+        // Send the uppercase datastreamFromMainServer back to the main server
+        send(server_socket, uppercasedBuffer, bytes_received, 0);
 
 
-        // // Convert the received message to uppercase
-        // for (int i = 0; i < bytes_received; i++) {
-        //     message[i] = toupper(message[i]);
-        // }
-
-        // Send the uppercase message back to the main server
-        // send(server_socket, message, bytes_received, 0);
     }
 
     // close sockets for cleanup
     close(server_socket);
-    close(helper_socket);
+    close(helperSocket);
 
     return 0;
 }
