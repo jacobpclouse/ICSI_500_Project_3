@@ -41,7 +41,7 @@ void *toUpperThreadingFunc(void *arg)
                 uppercasedBuffer[i] = 'A';
             }
         }
-        printf("charA thread output string: %s\n", uppercasedBuffer);
+        // printf("charA thread output string: %s\n", uppercasedBuffer);
 
         break;
     case 2:
@@ -53,7 +53,7 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charE thread output string: %s\n", uppercasedBuffer);
+        // printf("charE thread output string: %s\n", uppercasedBuffer);
         break;
     case 3:
         for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
@@ -64,7 +64,7 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charO thread output string: %s\n", uppercasedBuffer);
+        // printf("charO thread output string: %s\n", uppercasedBuffer);
         break;
     case 4:
         for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
@@ -75,7 +75,7 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charI thread output string: %s\n", uppercasedBuffer);
+        // printf("charI thread output string: %s\n", uppercasedBuffer);
         break;
     case 5:
         for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
@@ -86,14 +86,14 @@ void *toUpperThreadingFunc(void *arg)
             }
         }
 
-        printf("charU thread output string: %s\n", uppercasedBuffer);
+        // printf("charU thread output string: %s\n", uppercasedBuffer);
         break;
     default:
         break;
     }
 
     pthread_mutex_unlock(&mutex); // unlock
-    // printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
+    printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
 
     // iterate through and pass data from string to string
     if (inputDataStreamToUppercase->thread_id < 5) // queue here
@@ -163,7 +163,7 @@ int main()
         else
         {
             printf("\n=> DATA REQUEST RECIEVED!\n");
-            // printf("\nData request recieved! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
+            // printf("\n=> DATA REQUEST RECIEVED! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
         }
 
         // -----
