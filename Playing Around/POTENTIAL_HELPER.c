@@ -84,7 +84,7 @@ int main() {
     pthread_mutex_init(&mutex, NULL);
 
     // Simulate receiving data from a server
-    const char *serverData = "a simple example string";
+    const char *serverData = "the quick fox jumps over the lazy dog";
 
     // Lock the mutex to access the shared buffer
     pthread_mutex_lock(&mutex);
@@ -104,6 +104,8 @@ int main() {
 
     // Destroy mutex
     pthread_mutex_destroy(&mutex);
+
+    printf("Print shared buffer: %s\n", sharedBuffer);
 
     return 0;
 }

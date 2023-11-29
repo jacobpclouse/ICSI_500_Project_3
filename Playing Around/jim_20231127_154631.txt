@@ -1,7 +1,0 @@
--=-=-=-=-=-=-=-=-
-Currently logged in clients:
-jake
-jim
--=-=-=-=-=-=-=-=-
-<*> New client joined: jim <*>
-feawff

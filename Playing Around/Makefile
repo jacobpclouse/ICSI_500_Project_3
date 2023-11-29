@@ -7,7 +7,7 @@ FUNC = encDec.c
 HELPER = 1_helper
 SERVER = 2_server
 CLIENT = 3_client
-SAMPLE = sampleThreads
+#SAMPLE = sampleThreads
 
 all: $(HELPER) $(SERVER) $(CLIENT)
 
@@ -20,8 +20,8 @@ $(CLIENT): $(CLIENT_SRC)
 $(HELPER): $(HELPER).c
 	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c $(LIBS) $(FUNC)
 
-$(SAMPLE): $(SAMPLE).c
-	$(CC) $(CFLAGS) -o $(SAMPLE) $(SAMPLE).c $(LIBS)
+#$(SAMPLE): $(SAMPLE).c
+#	$(CC) $(CFLAGS) -o $(SAMPLE) $(SAMPLE).c $(LIBS)
 
 
 .PHONY: clean

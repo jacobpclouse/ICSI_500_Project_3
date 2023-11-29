@@ -1,0 +1,9 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+mark
+-=-=-=-=-=-=-=-=-
+<*> New client joined: mark <*>
+[jake]=> InpUt
+[jake]=> tEst
+marky boi

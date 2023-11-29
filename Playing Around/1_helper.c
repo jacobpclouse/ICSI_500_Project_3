@@ -12,45 +12,99 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 
+
 // constants
 #define HELPER_PORT 1996
 #define BUFFER_SIZE 2048
 #define NUM_THREADS 5
+// #define HELPER_SERVER_IP "127.0.0.1" // can't use this right now
 
-char dataToConvert[30];
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+char sharedBuffer[BUFFER_SIZE];
+pthread_mutex_t mutex;
+
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Structs -- move to header if can
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+// -- Struct to pass data to each thread for uppercasing --
+typedef struct {
+    int thread_id;
+} ThreadData;
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-// -- Function to convert a specific vowel to uppercase --
-void *convertVowelToUppercase(void *arg) {
-    char vowel = *((char *)arg);
+// Thread function
+void *threadFunction(void *arg) {
+    ThreadData *data = (ThreadData *)arg;
 
+    // Lock the mutex to access the shared buffer
     pthread_mutex_lock(&mutex);
-    for (int i = 0; i < strlen(dataToConvert); i++) {
-        if (dataToConvert[i] == vowel || dataToConvert[i] == (vowel - 32)) {
-            dataToConvert[i] = dataToConvert[i] - 32; // Convert to uppercase
-        }
+
+    // Perform transformations based on the thread ID
+    switch (data->thread_id) {
+        case 1:
+            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
+                if (sharedBuffer[i] == 'a') {
+                    sharedBuffer[i] = 'A';
+                }
+            }
+            break;
+        case 2:
+            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
+                if (sharedBuffer[i] == 'e') {
+                    sharedBuffer[i] = 'E';
+                }
+            }
+            break;
+        case 3:
+            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
+                if (sharedBuffer[i] == 'o') {
+                    sharedBuffer[i] = 'O';
+                }
+            }
+            break;
+        case 4:
+            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
+                if (sharedBuffer[i] == 'i') {
+                    sharedBuffer[i] = 'I';
+                }
+            }
+            break;
+        case 5:
+            for (int i = 0; i < BUFFER_SIZE && sharedBuffer[i] != '\0'; ++i) {
+                if (sharedBuffer[i] == 'u') {
+                    sharedBuffer[i] = 'U';
+                }
+            }
+            break;
+        default:
+            break;
     }
+
+    // Unlock the mutex
     pthread_mutex_unlock(&mutex);
+
+    // Print the result
+    printf("Thread %d: Transformed string: %s\n", data->thread_id, sharedBuffer);
+
+    // Pass the transformed string to the next thread
+    if (data->thread_id < 5) {
+        ThreadData nextThreadData = {data->thread_id + 1};
+        pthread_t nextThread;
+        pthread_create(&nextThread, NULL, threadFunction, &nextThreadData);
+        pthread_join(nextThread, NULL);
+    }
 
     pthread_exit(NULL);
 }
+
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # MAIN
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 int main() {
-    pthread_t threads[NUM_THREADS];
-    char vowels[NUM_THREADS] = {'a', 'e', 'i', 'o', 'u'};
-
-    // Create threads for each vowel
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_create(&threads[i], NULL, convertVowelToUppercase, (void *)&vowels[i]);
-    }
-
     int helper_socket;
     struct sockaddr_in helper_addr, server_addr;
     socklen_t addr_size = sizeof(server_addr);
@@ -65,6 +119,7 @@ int main() {
     // Configure helper server address
     helper_addr.sin_family = AF_INET;
     helper_addr.sin_port = htons(HELPER_PORT);
+    // helper_addr.sin_addr.s_addr = HELPER_SERVER_IP;
     helper_addr.sin_addr.s_addr = INADDR_ANY;
 
     // Bind the helper socket
@@ -81,8 +136,9 @@ int main() {
 
     myLogo(); // startup print outs
     printf("1_helper node listening on IP: %s on Port %d...\n", INADDR_ANY, HELPER_PORT);
+    
 
-        // Accept a connection from the main server
+    // Accept a connection from the main server
     int server_socket = accept(helper_socket, (struct sockaddr*)&server_addr, &addr_size);
     if (server_socket == -1) {
         perror("ERROR: Experienced issue accepting connection!");
@@ -93,34 +149,52 @@ int main() {
 
     // Main loop to handle communication with the main server
     while (1) {
-        // Reset the dataToConvert array for each new message
-        memset(dataToConvert, 0, sizeof(dataToConvert));
-
         char message[BUFFER_SIZE];
         int bytes_received = recv(server_socket, message, BUFFER_SIZE, 0);
         if (bytes_received <= 0) {
             connectionTerminated();
             break;
         } else {
-            printf("Data request received! :D\n");
-
-            // Convert vowels to uppercase using threads
-            for (int i = 0; i < NUM_THREADS; i++) {
-                pthread_join(threads[i], NULL);
-            }
-
-            printf("Done Recieving.. \n\n");
+            printf("Data request recieved! :D\n");
         }
 
+        pthread_mutex_init(&mutex, NULL);// initialize 
+
+        // MAYBE COPY MESSAGE INTO THE SERVER STUFF
+
+        // Lock the mutex to access the shared buffer
+        pthread_mutex_lock(&mutex);
+
+            // Copy the server data to the shared buffer
+        strncpy(sharedBuffer, message, BUFFER_SIZE - 1);
+        sharedBuffer[BUFFER_SIZE - 1] = '\0';
+
+        // Unlock the mutex
+        pthread_mutex_unlock(&mutex);
+
+        // Create the first thread
+        ThreadData firstThreadData = {1};
+        pthread_t firstThread;
+        pthread_create(&firstThread, NULL, threadFunction, &firstThreadData);
+        pthread_join(firstThread, NULL);
+
+        // Destroy mutex
+        pthread_mutex_destroy(&mutex);
+
         // Send the uppercase message back to the main server
-        send(server_socket, dataToConvert, bytes_received, 0);
+        send(server_socket, sharedBuffer, bytes_received, 0);
+
+
+        // // Convert the received message to uppercase
+        // for (int i = 0; i < bytes_received; i++) {
+        //     message[i] = toupper(message[i]);
+        // }
+
+        // Send the uppercase message back to the main server
+        // send(server_socket, message, bytes_received, 0);
     }
 
-    // Join threads and close sockets for cleanup
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(threads[i], NULL);
-    }
-
+    // close sockets for cleanup
     close(server_socket);
     close(helper_socket);
 
