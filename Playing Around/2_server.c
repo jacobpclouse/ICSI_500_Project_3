@@ -16,7 +16,6 @@
 
 int socketForHelperServer;
 
-
 // creating struct for clients
 struct organizedClientData clients[MAXIMUM_CONNECTED_CLIENTS];
 int client_count = 0;
@@ -246,13 +245,13 @@ int main(int argc, char *argv[])
     printf("Connected to helper server\n");
 
     // ----
-    addr_size = sizeof(client_addr); 
+    addr_size = sizeof(client_addr);
 
     // main communication loop
     while (1)
     {
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connenctions
-        if (client_count < MAXIMUM_CONNECTED_CLIENTS) // make sure not full
+        if (client_count < MAXIMUM_CONNECTED_CLIENTS)                                       // make sure not full
         {
             // new thread created for each client
             pthread_create(&tid, NULL, clientThreadSplitFunction, &client_socket);

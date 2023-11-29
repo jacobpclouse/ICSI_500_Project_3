@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 
         if (FD_ISSET(0, &read_fds))
         {
-             // get chats from current user
+            // get chats from current user
             fgets(outgoingDatastream, BUFFER_SIZE, stdin);
             send(client_socket, outgoingDatastream, strlen(outgoingDatastream), 0); // sends them to the server
 
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
             printf("%s", outgoingDatastream);
 
             // update chat file
-            writeMessageToFile(outputFile, outgoingDatastream); 
+            writeMessageToFile(outputFile, outgoingDatastream);
         }
     }
 

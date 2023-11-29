@@ -12,7 +12,6 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 
-
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data
 pthread_mutex_t mutex;
 
@@ -172,7 +171,6 @@ int main()
 
         pthread_mutex_init(&mutex, NULL); // initialize
 
-
         // Lock the mutex to access the shared buffer
         pthread_mutex_lock(&mutex);
 
@@ -198,8 +196,6 @@ int main()
 
         // Send the uppercase datastreamFromMainServer back to the main server
         send(server_socket, uppercasedBuffer, bytes_received, 0);
-
-
     }
 
     // close sockets for cleanup
