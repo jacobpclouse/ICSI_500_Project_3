@@ -12,99 +12,103 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 
+#define NUM_THREADS 5
+
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data
 pthread_mutex_t mutex;
+
+// Define a structure for the queue
+typedef struct
+{
+    int indices[BUFFER_SIZE];
+    int front, rear;
+} IndexQueue;
+
+IndexQueue indexQueue;      // Global queue for indices
+pthread_mutex_t queueMutex; // Mutex for the index queue
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+// Initialize the index queue
+void initializeQueue()
+{
+    indexQueue.front = -1;
+    indexQueue.rear = -1;
+}
+
+// Enqueue an index to the queue
+void enqueueIndex(int index)
+{
+    pthread_mutex_lock(&queueMutex);
+    if (indexQueue.front == -1)
+        indexQueue.front = 0;
+    indexQueue.rear++;
+    indexQueue.indices[indexQueue.rear] = index;
+    pthread_mutex_unlock(&queueMutex);
+}
+
+// Dequeue an index from the queue
+int dequeueIndex()
+{
+    int index;
+    pthread_mutex_lock(&queueMutex);
+    index = indexQueue.indices[indexQueue.front];
+    indexQueue.front++;
+    if (indexQueue.front > indexQueue.rear)
+    {
+        indexQueue.front = -1;
+        indexQueue.rear = -1;
+    }
+    pthread_mutex_unlock(&queueMutex);
+    return index;
+}
+
 // -- Function to create threads to break up and uppercase the input string
 // Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
 // Source 2: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
-void *serverDecoder(void *arg)
-{
+void *serverDecoder(void *arg) {
+    printf("-- Inside ServerDecoder! --");
     TheadsForAIEOU *inputDataStreamToUppercase = (TheadsForAIEOU *)arg;
 
-    pthread_mutex_lock(&mutex); // lock the mutex so we can access the shared buffer
+    int currentIndex = inputDataStreamToUppercase->thread_id;
 
-    // we uppercase based on thread id, pass data between them
-    // Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
-    switch (inputDataStreamToUppercase->thread_id)
-    {
-    case 1:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'a')
-            {
-                uppercasedBuffer[i] = 'A';
-            }
+    while (currentIndex < BUFFER_SIZE && uppercasedBuffer[currentIndex] != '\0') {
+        char currentChar = uppercasedBuffer[currentIndex];
+
+        pthread_mutex_lock(&mutex);
+        switch (currentChar) {
+            case 'a':
+                uppercasedBuffer[currentIndex] = 'A';
+                break;
+            case 'e':
+                uppercasedBuffer[currentIndex] = 'E';
+                break;
+            case 'i':
+                uppercasedBuffer[currentIndex] = 'I';
+                break;
+            case 'o':
+                uppercasedBuffer[currentIndex] = 'O';
+                break;
+            case 'u':
+                uppercasedBuffer[currentIndex] = 'U';
+                break;
+            // Add more cases for other characters if needed
         }
-        // printf("charA thread output string: %s\n", uppercasedBuffer);
+        pthread_mutex_unlock(&mutex);
 
-        break;
-    case 2:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'e')
-            {
-                uppercasedBuffer[i] = 'E';
-            }
+        currentIndex = dequeueIndex();
+
+        if (currentIndex != -1) {
+            pthread_mutex_lock(&mutex);
+            printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
+            pthread_mutex_unlock(&mutex);
         }
-
-        // printf("charE thread output string: %s\n", uppercasedBuffer);
-        break;
-    case 3:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'o')
-            {
-                uppercasedBuffer[i] = 'O';
-            }
-        }
-
-        // printf("charO thread output string: %s\n", uppercasedBuffer);
-        break;
-    case 4:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'i')
-            {
-                uppercasedBuffer[i] = 'I';
-            }
-        }
-
-        // printf("charI thread output string: %s\n", uppercasedBuffer);
-        break;
-    case 5:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'u')
-            {
-                uppercasedBuffer[i] = 'U';
-            }
-        }
-
-        // printf("charU thread output string: %s\n", uppercasedBuffer);
-        break;
-    default:
-        break;
     }
 
-    pthread_mutex_unlock(&mutex); // unlock
-    printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
-
-
-    // iterate through and pass data from string to string
-    if (inputDataStreamToUppercase->thread_id < 5) // queue here
-    {
-        TheadsForAIEOU nextThreadData = {inputDataStreamToUppercase->thread_id + 1};
-        pthread_t nextThread;
-        pthread_create(&nextThread, NULL, serverDecoder, &nextThreadData);
-        pthread_join(nextThread, NULL);
-
-        // NEED TO HAVE ServerEncoder HERE!
-    }
+    // Free the dynamically allocated memory before exiting the thread
+    free(inputDataStreamToUppercase);
 
     pthread_exit(NULL);
 }
@@ -150,12 +154,17 @@ int main()
         exit(1);
     }
 
+    initializeQueue(); // Initialize the index queue
+
     serverConnected(); // shows main 2_server has connected
 
     // main communication loop
     while (1)
     {
         char datastreamFromMainServer[BUFFER_SIZE];
+        // int dataBytesIncoming = recv(server_socket, datastreamFromMainServer, BUFFER_SIZE, 0);
+
+        // char datastreamFromMainServer[BUFFER_SIZE];
         int dataBytesIncoming = recv(server_socket, datastreamFromMainServer, BUFFER_SIZE, 0);
         if (dataBytesIncoming <= 0)
         {
@@ -165,54 +174,40 @@ int main()
         else
         {
             printf("\n=> DATA REQUEST RECIEVED!\n");
-            // printf("\n=> DATA REQUEST RECIEVED! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
         }
 
         // -----
         // USE THREADING TO UPPERCASE DATA - Start!
         // -----
 
-        /*
-            Idea, put a queue here and break the strings down into 5 char components, 
-            then we just have to put a for loop in and have the function loop through over and over again 
-            so we can get through the queued data
-            Then we can send it back!
+        pthread_mutex_lock(&queueMutex);
 
-            try to get the queue working
-            then put the serverDecode funtion in it and see if you can get it to uppercase the data correctly,
-            then have it split up the data into chunks of 5 chars, log those arrays in the queue, then have the queue disgorge them one by one
+        // Enqueue indices to the queue
+        for (int i = 0; i < BUFFER_SIZE; ++i)
+        {
+            enqueueIndex(i);
+        }
 
-        */
+        pthread_mutex_unlock(&queueMutex);
 
-        pthread_mutex_init(&mutex, NULL); // initialize
+        // Create threads for each character
+        pthread_t threads[NUM_THREADS];
+        for (int i = 0; i < NUM_THREADS; ++i)
+        {
+            TheadsForAIEOU *threadData = malloc(sizeof(TheadsForAIEOU));
+            threadData->thread_id = i + 1;
+            pthread_create(&threads[i], NULL, serverDecoder, threadData);
+        }
 
-        // Lock the mutex to access the shared buffer
-        pthread_mutex_lock(&mutex);
-
-        // Copy the server data to the shared buffer
-        strncpy(uppercasedBuffer, datastreamFromMainServer, BUFFER_SIZE - 1);
-        uppercasedBuffer[BUFFER_SIZE - 1] = '\0';
-
-        // Unlock the mutex
-        pthread_mutex_unlock(&mutex);
-
-        // Create the first thread
-        TheadsForAIEOU firstThreadData = {1};
-        pthread_t firstThread;
-        pthread_create(&firstThread, NULL, serverDecoder, &firstThreadData);
-        pthread_join(firstThread, NULL);
-
-        // Destroy mutex
-        pthread_mutex_destroy(&mutex);
-
-        // -----
-        // USE THREADING TO UPPERCASE DATA - End!
-        // -----
+        // Wait for all threads to finish
+        for (int i = 0; i < NUM_THREADS; ++i)
+        {
+            pthread_join(threads[i], NULL);
+        }
 
         // Send the uppercase datastreamFromMainServer back to the main server
         send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
     }
-
     // close sockets for cleanup
     close(server_socket);
     close(helperSocket);
