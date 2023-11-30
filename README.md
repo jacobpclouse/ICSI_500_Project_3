@@ -1,7 +1,15 @@
 # ICSI_500_Project_3
 Develop a practical understanding of task collaboration using socket programming, semaphores, multithreading.
 
-# YOU NEED TO RENAME ALL THE FUNCTION & VARIABLE NAMES BEFORE SUBMITTING
+## TO DO: 
+- [ ] Need to use CRC encoding for sharing data back and forth from helper and server
+- [ ] At end of uppercase, The writer thread will share the data received with the serverEncoder
+component (encoding for going back to server)
+- [ ] Impliment queue of strings for incoming data strings
+- * [ ] This structure will be an array of pointers to strings with integers (pointers) to indicate
+the head and tail of the list.
+- * [ ] The maximum size of the buffer array will be 5.
+- * [ ] Threads should terminate when end of input data is reached. 
 
 ## OBJECTIVES
 Develop a client/server application using Linux TCP sockets and the C programming language.
