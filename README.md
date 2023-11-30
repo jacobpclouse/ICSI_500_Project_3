@@ -40,3 +40,4 @@ nodes will be encoded according to the format defined in project-2
 - Mutex lock for Linux Thread Synchronization: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
 - Introduction and Array Implementation of Queue: https://www.geeksforgeeks.org/introduction-and-array-implementation-of-queue/
 - Creating a Queue in C: https://www.digitalocean.com/community/tutorials/queue-in-c
+- [IMPORTANT] Implementing a queue in C: https://www.youtube.com/watch?v=Ra6p-Bmajlw
