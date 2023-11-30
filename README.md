@@ -12,7 +12,7 @@ component (encoding for going back to server)
 the head and tail of the list.
 - * [ ] The maximum size of the buffer array will be 5.
 - * [ ] Threads should terminate when end of input data is reached. 
-
+- [x] figure out how to do a three way (ie: client -> server -> helper)
 
 ## OBJECTIVES
 Develop a client/server application using Linux TCP sockets and the C programming language.
@@ -32,11 +32,11 @@ and use a socket to share the generated results to the server. All communication
 nodes will be encoded according to the format defined in project-2
 
 
-# figure out how to do a three way (ie: client -> server -> helper)
-
 ## Resources Used: 
 - Convert Uppercase to Lowercase in C: https://www.javatpoint.com/convert-uppercase-to-lowercase-in-c
 - Working and creating threads in C but am running into a problem with the argument type: https://stackoverflow.com/questions/71230931/working-and-creating-threads-in-c-but-am-running-into-a-problem-with-the-argumen
 - Java Multithreading Uppercase String: https://stackoverflow.com/questions/53089643/java-multithreading-uppercase-string
 - Switch Statements: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
 - Mutex lock for Linux Thread Synchronization: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
+- Introduction and Array Implementation of Queue: https://www.geeksforgeeks.org/introduction-and-array-implementation-of-queue/
+- Creating a Queue in C: https://www.digitalocean.com/community/tutorials/queue-in-c
