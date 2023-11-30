@@ -2,6 +2,8 @@
 Develop a practical understanding of task collaboration using socket programming, semaphores, multithreading.
 
 ## TO DO: 
+- [ ] Write documentation & report for Project 3
+- * [ ] Create Sequence Diagram for helper/server/client
 - [ ] Need to use CRC encoding for sharing data back and forth from helper and server
 - [ ] At end of uppercase, The writer thread will share the data received with the serverEncoder
 component (encoding for going back to server)
@@ -10,6 +12,7 @@ component (encoding for going back to server)
 the head and tail of the list.
 - * [ ] The maximum size of the buffer array will be 5.
 - * [ ] Threads should terminate when end of input data is reached. 
+
 
 ## OBJECTIVES
 Develop a client/server application using Linux TCP sockets and the C programming language.
