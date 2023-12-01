@@ -1,0 +1,7 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+mary
+-=-=-=-=-=-=-=-=-
+<*> New client joined: mary <*>
+aeious

@@ -18,8 +18,10 @@
 // pthread_mutex_t mutex;
 
 // queue struct and variables
-#define MAX_THREADS 5
+#define MAX_THREADS 6
 #define QUEUE_EMPTY '\0'
+
+char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 
 typedef struct
 {
@@ -110,8 +112,7 @@ char dequeue(queue *q)
 // Source 2: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
 // dequeue -> uppercase -> requeue (for loop size of 5)
 // caseThread to determine which case we want
-// void createThreadsForDecode(queue *q, int threadCountCase)
-void *createThreadsForDecode(void *arg)
+void *serverDecoder(void *arg)
 {
     struct ThreadData *threadData = (struct ThreadData *)arg;
 
@@ -181,6 +182,13 @@ void *createThreadsForDecode(void *arg)
 
     pthread_exit(NULL);
 }
+
+
+// // gets data ready to send back to server
+// void *serverEncoder(void *arg){
+//     printf("Encoding data!");
+// }
+
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # MAIN
@@ -301,8 +309,20 @@ int main()
         // Create and join threads
         pthread_t threads[MAX_THREADS];
         for (int j = 0; j < MAX_THREADS; j++)
-        {
-            pthread_create(&threads[j], NULL, createThreadsForDecode, (void *)&threadData[j]);
+        {   
+            // first 5 threads - MAKE SURE THIS WORKS
+            if (j < MAX_THREADS){
+                pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
+            } 
+
+            // // first 5 threads - MAKE SURE THIS WORKS - server encode function
+            // if (j < MAX_THREADS - 1){
+            //     pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
+            // } else {
+            //     // join the the rest to decoder ********
+            //     pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
+            // }
+            
         }
 
         for (int j = 0; j < MAX_THREADS; j++)
@@ -310,6 +330,11 @@ int main()
             pthread_join(threads[j], NULL);
         }
     }
+
+
+
+
+
 
         // --------- FREE QUEUE
 
@@ -320,13 +345,25 @@ int main()
             printf("\nQueue %d:\n", i + 1);
             char t;
             int counter = 0;
-            while ((t = dequeue(&queues[i])) != QUEUE_EMPTY)
-            {
+            for (int j = 0; j < queue_size; j++){
+                t = dequeue(&queues[i]);
+                uppercasedBuffer[counter] = t;
                 counter++;
                 printf("Char #%d --> %c , ", counter, t);
+
             }
+            // while ((t = dequeue(&queues[i])) != QUEUE_EMPTY)
+            // {
+            //     uppercasedBuffer[counter] = t;
+            //     counter++;
+            //     printf("Char #%d --> %c , ", counter, t);
+            // }
             printf("\n");
         }
+
+        printf("Uppercased data: %s", uppercasedBuffer);
+        // Send the uppercase datastreamFromMainServer back to the main server
+        send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
 
         // Free memory for each queue
         for (int i = 0; i < num_queues; i++)
