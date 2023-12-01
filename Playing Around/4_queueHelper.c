@@ -249,13 +249,20 @@ int main()
         else
         {
             printf("\n=> DATA REQUEST RECIEVED!\n");
-            // printf("\n=> DATA REQUEST RECIEVED! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
         }
 
-        // first enqueue all the data we have
+        // first enqueue all the data we have 
+        // buffer is 100, so we need 20 queues
+        queue bufferQueLine1;
+        queue bufferQueLine2;
+        queue bufferQueLine3;
+        queue bufferQueLine4;
+        queue bufferQueLine5;
 
 
 
+
+/*
         // -----
         // USE THREADING TO UPPERCASE DATA - Start!
         // -----
@@ -284,7 +291,7 @@ int main()
         // -----
         // USE THREADING TO UPPERCASE DATA - End!
         // -----
-
+*/
 
 
         // Send the uppercase datastreamFromMainServer back to the main server

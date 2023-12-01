@@ -51,4 +51,13 @@ void connectionTerminated() {
     printf("|_____|___|_|_|_|_|___|___|_| |_|___|_|_|    |_| |___|_| |_|_|_|_|_|_|__,|_| |___|___|\n");
 }
 
-
+// -- Function to print out when the server establishes connect to the helper (on server console--
+void serverConnectedToHelper() {
+    printf("\n");
+    printf(" _____     _                _____                     _         _ \n");
+    printf("|  |  |___| |___ ___ ___   |     |___ ___ ___ ___ ___| |_ ___ _| |\n");
+    printf("|     | -_| | . | -_|  _|  |   --| . |   |   | -_|  _|  _| -_| . |\n");
+    printf("|__|__|___|_|  _|___|_|    |_____|___|_|_|_|_|___|___|_| |___|___|\n");
+    printf("            |_|\n");
+    printf("\n");
+}

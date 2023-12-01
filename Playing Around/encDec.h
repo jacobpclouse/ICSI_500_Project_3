@@ -44,13 +44,18 @@ struct organizedClientData
 
 
 
-// Function declarations
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Functions
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+// print out functions:
 void myLogo();
 
 void serverConnected();
 
 void connectionTerminated();
 
-
+void serverConnectedToHelper();
+// end of print out functions
 
 #endif
