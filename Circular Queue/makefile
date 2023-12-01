@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall
 
 # names of files
-QUEUE = 4_queue_of_queues_intext
+QUEUE = 6_update_queue
 CHARS = 2_Circular_queue_chars
 INTEGER = 1_Circular_queue
 
