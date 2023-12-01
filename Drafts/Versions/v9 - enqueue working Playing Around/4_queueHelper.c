@@ -271,7 +271,7 @@ int main()
             for (int j = 0; j < queue_size; j++)
             {
                 // if (str_index < dataBytesIncoming)
-                if (str_index < (dataBytesIncoming - 1)) // if not shorter, will screw everything up with carrage return
+                if (str_index < (dataBytesIncoming - 1))
                 {
                     enqueue(&queues[i], datastreamFromMainServer[str_index]);
                     str_index++;
@@ -286,7 +286,7 @@ int main()
         }
 
         // Print and dequeue elements from each queue
-        
+        // for (int i = 0; i < real_queue_num; i++)
         for (int i = 0; i < num_queues; i++)
         {
             printf("\nQueue %d:\n", i + 1);
