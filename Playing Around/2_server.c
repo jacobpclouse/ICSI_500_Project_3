@@ -242,7 +242,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    printf("Connected to helper server\n");
+    // printf("Connected to helper server\n");
+    serverConnectedToHelper();
 
     // ----
     addr_size = sizeof(client_addr);

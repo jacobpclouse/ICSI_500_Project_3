@@ -12,7 +12,6 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 #include <stdbool.h> // for queue
-#include <math.h>  // ceil function
 
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data
 pthread_mutex_t mutex;
@@ -243,18 +242,15 @@ int main()
         }
         else
         {
-            printf("\n=> DATA REQUEST RECIEVED!\n");
-            // printf("\n=> DATA REQUEST RECIEVED! Received data size: %d bytes\n", dataBytesIncoming);
+            // printf("\n=> DATA REQUEST RECIEVED!\n");
+            printf("\n=> DATA REQUEST RECIEVED! Received data size: %d bytes\n", dataBytesIncoming);
         }
 
         // first enqueue all the data we have
         // buffer is 100, so we need 20 queues
 
-        // int num_queues = 20; // Number of queues you want
+        int num_queues = 20; // Number of queues you want
         int queue_size = 5;  // Size of each queue
-            // Calculate the number of queues based on the provided formula
-        int num_queues = (int)ceil((double)dataBytesIncoming / queue_size); 
-        printf("*Data bytes: %d, Queue size: %d, Number of queues: %d\n", dataBytesIncoming, queue_size,num_queues);
 
         // Create an array of queues dynamically
         queue *queues = malloc(sizeof(queue) * num_queues);
@@ -270,8 +266,7 @@ int main()
         {
             for (int j = 0; j < queue_size; j++)
             {
-                // if (str_index < dataBytesIncoming)
-                if (str_index < (dataBytesIncoming - 1))
+                if (str_index < dataBytesIncoming)
                 {
                     enqueue(&queues[i], datastreamFromMainServer[str_index]);
                     str_index++;
@@ -279,23 +274,20 @@ int main()
                 else
                 {
                     // If we reach the end of the received data, fill up with spaces
-                    enqueue(&queues[i], '_');
-                    // printf('Empty BOI');
+                    enqueue(&queues[i], ' ');
                 }
             }
         }
 
         // Print and dequeue elements from each queue
-        // for (int i = 0; i < real_queue_num; i++)
         for (int i = 0; i < num_queues; i++)
         {
-            printf("\nQueue %d:\n", i + 1);
+            printf("Queue %d:\n", i + 1);
             char t;
             while ((t = dequeue(&queues[i])) != QUEUE_EMPTY)
             {
-                printf("Char Num %d = %c ", i, t);
+                printf("t = %c\n", t);
             }
-            printf("\n");
         }
 
         // Free memory for each queue

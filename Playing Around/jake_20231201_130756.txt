@@ -4,7 +4,5 @@ jake
 -=-=-=-=-=-=-=-=-
 <*> New client joined: jake <*>
 <*> New client joined: mary <*>
-[mary]=> hI jAkE
-hi mary!
-[mary]=> whAt hAs bEEn gOIn On?
-the rain in spain falls neatly in the drain!
+testing
+test 2

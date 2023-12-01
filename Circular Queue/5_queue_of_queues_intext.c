@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define QUEUE_EMPTY '\0'
 
@@ -75,26 +76,35 @@ int main()
         init_queue(&queues[i], queue_size);
     }
 
-// custom input below ----------
-    char input_string[] = "HelloWorld";  // Input string to be distributed among queues
+    // custom input below ----------
+    char input_string[] = "HelloWorld the rain in spain falls neatly in the drain"; // Input string to be distributed among queues
     int str_index = 0;
 
+    // Add a null character at the end of the input_string
+    input_string[sizeof(input_string) - 1] = '\0';
+
     // Example usage of queues with characters from the string
-    for (int i = 0; i < num_queues; i++) {
-        for (int j = 0; j < queue_size; j++) {
-            if (input_string[str_index] != '\0') {
+    for (int i = 0; i < num_queues; i++)
+    {
+        for (int j = 0; j < queue_size; j++)
+        {
+            if (str_index < strlen(input_string))
+            {
                 enqueue(&queues[i], input_string[str_index]);
                 str_index++;
-            } else {
-                // If we reach the end of the string, fill up with spaces
-                enqueue(&queues[i], ' ');
+            }
+            else
+            {
+                if (&queues[i] != 0){
+                    // If we reach the end of the string, fill up with '-'
+                    enqueue(&queues[i], '-');
+                    str_index++;
+                }
+                
             }
         }
     }
 
-
-
-// -- 
     // Print and dequeue elements from each queue
     for (int i = 0; i < num_queues; i++)
     {

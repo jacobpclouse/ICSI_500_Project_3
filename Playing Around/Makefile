@@ -2,6 +2,7 @@ CC = gcc
 CFLAGS = -Wall
 LIBS = -lpthread
 FUNC = encDec.c
+MATH = -lm
 
 # Server and Client executables
 HELPER = 1_helper
@@ -21,7 +22,7 @@ $(HELPER): $(HELPER).c
 	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c $(LIBS) $(FUNC)
 
 $(SAMPLE): $(SAMPLE).c
-	$(CC) $(CFLAGS) -o $(SAMPLE) $(SAMPLE).c $(LIBS) $(FUNC)
+	$(CC) $(CFLAGS) -o $(SAMPLE) $(SAMPLE).c $(LIBS) $(FUNC) $(MATH)
 
 
 .PHONY: clean
