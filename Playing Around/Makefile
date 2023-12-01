@@ -10,7 +10,7 @@ SERVER = 2_server
 CLIENT = 3_client
 SAMPLE = 4_queueHelper
 
-all: $(HELPER) $(SERVER) $(CLIENT) $(SAMPLE)
+all: $(SERVER) $(CLIENT) $(SAMPLE)
 
 $(SERVER): $(SERVER_SRC)
 	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER).c $(LIBS) $(FUNC)
@@ -18,8 +18,8 @@ $(SERVER): $(SERVER_SRC)
 $(CLIENT): $(CLIENT_SRC)
 	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT).c $(FUNC)
 
-$(HELPER): $(HELPER).c
-	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c $(LIBS) $(FUNC)
+# $(HELPER): $(HELPER).c
+# 	$(CC) $(CFLAGS) -o $(HELPER) $(HELPER).c $(LIBS) $(FUNC)
 
 $(SAMPLE): $(SAMPLE).c
 	$(CC) $(CFLAGS) -o $(SAMPLE) $(SAMPLE).c $(LIBS) $(FUNC) $(MATH)
@@ -28,4 +28,4 @@ $(SAMPLE): $(SAMPLE).c
 .PHONY: clean
 
 clean: 
-	rm -f $(SERVER) $(CLIENT) $(HELPER) *.txt $(SAMPLE)
+	rm -f $(SERVER) $(CLIENT) *.txt $(SAMPLE)
