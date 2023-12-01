@@ -11,9 +11,21 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
+#include <stdbool.h> // for queue
+
 
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data
 pthread_mutex_t mutex;
+
+// queue struct and variables
+#define QUEUE_EMPTY '\0'
+
+typedef struct
+{
+	char *values;
+	int head, tail, num_entries, size; // pointers to keep track of start and back of queue, also number of allowed entries (5 for us), and size of queue
+} queue;
+
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -109,6 +121,78 @@ void *serverDecoder(void *arg)
     pthread_exit(NULL);
 }
 
+
+// queue functions below:
+// source: https://youtu.be/oyX30WVuEos
+// initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
+void init_queue(queue *q, int max_size)
+{
+	q->size = max_size;
+	q->values = malloc(sizeof(int) * q->size);
+	q->num_entries = 0; // make it empty at the start
+	q->head = 0;
+	q->tail = 0;
+}
+
+// check to see if our queue is empty
+bool queue_empty(queue *q)
+{
+	return (q->num_entries == 0);
+}
+
+// check to see if we have filled up our queue
+bool queue_full(queue *q)
+{
+	return (q->num_entries == q->size);
+}
+
+// destroy queue to clean up space + prevent memory leaks
+void queue_destroy(queue *q)
+{
+	free(q->values);
+}
+
+// add element to the back of the queue (queue is the queue we are adding to, value is what we want to add to the queue)
+bool enqueue(queue *q, char value)
+{
+
+	// check to make sure queue is not full
+	if (queue_full(q))
+	{
+		return false;
+	}
+
+	// if not full, add to the back and increase num of entries and move tail
+	q->values[q->tail] = value;
+	q->num_entries++;
+	q->tail = (q->tail + 1) % q->size; // will clock around if reach end of the queue
+
+	return true;
+}
+
+// remove item from our queue
+char dequeue(queue *q)
+{
+
+	char result;
+
+	// if queue empty, break and say that the queue is empty
+	if (queue_empty(q))
+	{
+		return QUEUE_EMPTY;
+	}
+
+	// if not empty, save result that is the queue's head positions and return it
+	result = q->values[q->head];
+	q->head = (q->head + 1) % q->size; // keep track of size
+	q->num_entries--;
+
+	return result;
+}
+
+
+
+
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # MAIN
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -168,21 +252,13 @@ int main()
             // printf("\n=> DATA REQUEST RECIEVED! Remember Thread# 1 = A, 2 = E, 3 = I, 4 = O, 5 = U\n");
         }
 
+        // first enqueue all the data we have
+
+
+
         // -----
         // USE THREADING TO UPPERCASE DATA - Start!
         // -----
-
-        /*
-            Idea, put a queue here and break the strings down into 5 char components, 
-            then we just have to put a for loop in and have the function loop through over and over again 
-            so we can get through the queued data
-            Then we can send it back!
-
-            try to get the queue working
-            then put the serverDecode funtion in it and see if you can get it to uppercase the data correctly,
-            then have it split up the data into chunks of 5 chars, log those arrays in the queue, then have the queue disgorge them one by one
-
-        */
 
         pthread_mutex_init(&mutex, NULL); // initialize
 
@@ -208,6 +284,8 @@ int main()
         // -----
         // USE THREADING TO UPPERCASE DATA - End!
         // -----
+
+
 
         // Send the uppercase datastreamFromMainServer back to the main server
         send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);

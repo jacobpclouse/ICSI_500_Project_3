@@ -1,0 +1,10 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+mary
+-=-=-=-=-=-=-=-=-
+<*> New client joined: mary <*>
+hi jake
+[jake]=> hI mAry!
+what has been goin on?
+[jake]=> thE rAIn In spAIn fAlls nEAtly In thE drAIn!
