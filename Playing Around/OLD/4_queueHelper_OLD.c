@@ -12,12 +12,13 @@
 #include <sys/socket.h>
 #include <pthread.h> // threading for the aieou stuff
 #include <stdbool.h> // for queue
-#include <math.h>  // ceil function
+#include <math.h>    // ceil function
+#include <pthread.h>
 
-// char uppercasedBuffer[BUFFER_SIZE]; // to store thread data
-pthread_mutex_t mutex;
+// pthread_mutex_t mutex;
 
 // queue struct and variables
+#define MAX_THREADS 5
 #define QUEUE_EMPTY '\0'
 
 typedef struct
@@ -25,6 +26,12 @@ typedef struct
     char *values;
     int head, tail, num_entries, size; // pointers to keep track of start and back of queue, also number of allowed entries (5 for us), and size of queue
 } queue;
+
+struct ThreadData
+{
+    queue *q;
+    int threadNumber;
+};
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -98,249 +105,82 @@ char dequeue(queue *q)
     return result;
 }
 
-
-
 // -- Function to create threads to break up and uppercase the input string
 // Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
 // Source 2: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
-// dequeue -> uppercase -> requeue (for loop size of 5) 
+// dequeue -> uppercase -> requeue (for loop size of 5)
 // caseThread to determine which case we want
-void serverDecoder(queue *q)
+// void createThreadsForDecode(queue *q, int threadCountCase)
+void *createThreadsForDecode(void *arg)
 {
+    struct ThreadData *threadData = (struct ThreadData *)arg;
+
+    queue *q = threadData->q;
+    int currentThreadIDCASE = threadData->threadNumber;
+
+    printf("Starting server decoder for Thread %d!\n", currentThreadIDCASE);
+
     queue tempQueue;
     init_queue(&tempQueue, q->size);
 
     while (!queue_empty(q))
     {
         char element = dequeue(q);
-        
-        // Check if the dequeued character is 'a'
-        if (element == 'a')
+
+        switch (currentThreadIDCASE)
         {
-            // Uppercase 'a' and enqueue it back into the original queue
-            element = 'A';
+        case 1: // A
+            if (element == 'a')
+            {
+                element = 'A';
+            }
+            break;
+
+        case 2: // E
+            if (element == 'e')
+            {
+                element = 'E';
+            }
+            break;
+
+        case 3: // I
+            if (element == 'i')
+            {
+                element = 'I';
+            }
+            break;
+
+        case 4: // O
+            if (element == 'o')
+            {
+                element = 'O';
+            }
+            break;
+
+        case 5: // U
+            if (element == 'u')
+            {
+                element = 'U';
+            }
+            break;
+
+        default:
+            break;
         }
 
-        // Enqueue the modified or unmodified element into the temporary queue
         enqueue(&tempQueue, element);
     }
 
-    // Transfer elements back to the original queue
     while (!queue_empty(&tempQueue))
     {
         char element = dequeue(&tempQueue);
         enqueue(q, element);
     }
 
-    // Destroy the temporary queue
     queue_destroy(&tempQueue);
-}
-
-
-
-
-void *serverDecoder1(queue *inputQueue, int queueSize, int caseThread)
-{
-    printf("Starting server decoder!");
-    // need to create threads and thread id
-
-
-    // we uppercase based on thread id, pass data between them
-    // Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
-    switch (caseThread)
-    {
-    case 1:
-        for (int i = 0; i < queueSize; ++i)
-        {
-            // dequeue
-            char tempStorage;
-            tempStorage = dequeue(&inputQueue[i]);
-
-            // uppercase
-            if (tempStorage == 'a')
-            {
-                tempStorage = 'A';
-            }
-
-            // re-enqueue uppercased data
-            enqueue(&inputQueue, tempStorage);
-        }
-        // printf("charA thread output string: %s\n", uppercasedBuffer);
-        break;
-
-    case 2:
-        for (int i = 0; i < queueSize; ++i)
-        {
-            // dequeue
-            char tempStorage;
-            tempStorage = dequeue(&inputQueue[i]);
-
-            // uppercase
-            if (tempStorage == 'e')
-            {
-                tempStorage = 'E';
-            }
-
-            // re-enqueue uppercased data
-            enqueue(&inputQueue, tempStorage);
-        }
-
-        // printf("charE thread output string: %s\n", uppercasedBuffer);
-        break;
-
-    case 3:
-        for (int i = 0; i < queueSize; ++i)
-        {
-            // dequeue
-            char tempStorage;
-            tempStorage = dequeue(&inputQueue[i]);
-
-            // uppercase
-            if (tempStorage == 'i')
-            {
-                tempStorage = 'I';
-            }
-
-            // re-enqueue uppercased data
-            enqueue(&inputQueue, tempStorage);
-        }
-        // printf("charI thread output string: %s\n", uppercasedBuffer);
-        break;
-
-    case 4:
-        for (int i = 0; i < queueSize; ++i)
-        {
-            // dequeue
-            char tempStorage;
-            tempStorage = dequeue(&inputQueue[i]);
-
-            // uppercase
-            if (tempStorage == 'o')
-            {
-                tempStorage = 'O';
-            }
-
-            // re-enqueue uppercased data
-            enqueue(&inputQueue, tempStorage);
-        }
-        // printf("charO thread output string: %s\n", uppercasedBuffer);
-        break;
-
-    case 5:
-        for (int i = 0; i < queueSize; ++i)
-        {
-            // dequeue
-            char tempStorage;
-            tempStorage = dequeue(&inputQueue[i]);
-
-            // uppercase
-            if (tempStorage == 'u')
-            {
-                tempStorage = 'U';
-            }
-
-            // re-enqueue uppercased data
-            enqueue(&inputQueue, tempStorage);
-        }
-
-        // printf("charU thread output string: %s\n", uppercasedBuffer);
-        break;
-    default:
-        break;
-    }
-
-}
-
-/*
-void *serverDecoder(void *arg)
-{
-    TheadsForAIEOU *inputDataStreamToUppercase = (TheadsForAIEOU *)arg;
-
-    pthread_mutex_lock(&mutex); // lock the mutex so we can access the shared buffer
-
-    // we uppercase based on thread id, pass data between them
-    // Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
-    switch (inputDataStreamToUppercase->thread_id)
-    {
-    case 1:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'a')
-            {
-                uppercasedBuffer[i] = 'A';
-            }
-        }
-        // printf("charA thread output string: %s\n", uppercasedBuffer);
-
-        break;
-    case 2:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'e')
-            {
-                uppercasedBuffer[i] = 'E';
-            }
-        }
-
-        // printf("charE thread output string: %s\n", uppercasedBuffer);
-        break;
-    case 3:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'o')
-            {
-                uppercasedBuffer[i] = 'O';
-            }
-        }
-
-        // printf("charO thread output string: %s\n", uppercasedBuffer);
-        break;
-    case 4:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'i')
-            {
-                uppercasedBuffer[i] = 'I';
-            }
-        }
-
-        // printf("charI thread output string: %s\n", uppercasedBuffer);
-        break;
-    case 5:
-        for (int i = 0; i < BUFFER_SIZE && uppercasedBuffer[i] != '\0'; ++i)
-        {
-            if (uppercasedBuffer[i] == 'u')
-            {
-                uppercasedBuffer[i] = 'U';
-            }
-        }
-
-        // printf("charU thread output string: %s\n", uppercasedBuffer);
-        break;
-    default:
-        break;
-    }
-
-    pthread_mutex_unlock(&mutex); // unlock
-    printf("Thread %d: %s\n", inputDataStreamToUppercase->thread_id, uppercasedBuffer);
-
-    // iterate through and pass data from string to string
-    if (inputDataStreamToUppercase->thread_id < 5) // queue here
-    {
-        TheadsForAIEOU nextThreadData = {inputDataStreamToUppercase->thread_id + 1};
-        pthread_t nextThread;
-        pthread_create(&nextThread, NULL, serverDecoder, &nextThreadData);
-        pthread_join(nextThread, NULL);
-
-        // NEED TO HAVE ServerEncoder HERE!
-    }
 
     pthread_exit(NULL);
 }
-*/
-
-
-
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # MAIN
@@ -404,14 +244,13 @@ int main()
 
         // first enqueue all the data we have
         // buffer is 100, so we need 20 queues
-        int queue_size = 5;  // Size of each queue
-        int num_queues = (int)ceil((double)dataBytesIncoming / queue_size); 
-        printf("*Data bytes: %d, Queue size: %d, Number of queues: %d\n", dataBytesIncoming, queue_size,num_queues);
+        int queue_size = 5; // Size of each queue
+        int num_queues = (int)ceil((double)dataBytesIncoming / queue_size);
+        printf("*Data bytes: %d, Queue size: %d, Number of queues: %d\n", dataBytesIncoming, queue_size, num_queues);
 
         // Create an array of queues dynamically
         queue *queues = malloc(sizeof(queue) * num_queues); // store incoming data from buffer here
         // queue *output_queues = malloc(sizeof(queue) * num_queues); // store output data here, name same size
-
 
         // Initialize each queue in the array
         for (int i = 0; i < num_queues; i++)
@@ -438,28 +277,43 @@ int main()
                 }
             }
         }
-// ---- 
+        // ----
         // ENQUEING IS GREAT, NOW WE NEED TO PASS QUEUES INTO THE UPPERCASE THREADING FUNCTION
         // THEN HAVE IT THREAD AND UPPERCASE ACCROSS SUBSEQUENT QUEUES
         // NEED TO USE BLOCKING AND SEPHAHONES
 
         for (int i = 0; i < num_queues; i++)
         {
-            int caseswitcher = 1;// only upppercase A's if have 1
-            printf("\nQueue %d:\n", i + 1);
-            // void *serverDecoder(queue *inputQueue, int queueSize, int caseThread)
-            // put threads here??
-            serverDecoder(&queues[i]); // pass variable thread id
+            int threadCaseSwitcher = 1;
+            printf("THREADING...\n");
+
+            // Create an array of thread data structures
+            struct ThreadData threadData[MAX_THREADS];
+
+            // Initialize each thread data structure with the appropriate values
+            for (int j = 0; j < MAX_THREADS; j++)
+            {
+                threadData[j].q = &queues[i];
+                threadData[j].threadNumber = threadCaseSwitcher;
+            }
+
+            // Create and join threads
+            pthread_t threads[MAX_THREADS];
+            for (int j = 0; j < MAX_THREADS; j++)
+            {
+                pthread_create(&threads[j], NULL, createThreadsForDecode, (void *)&threadData[j]);
+            }
+
+            for (int j = 0; j < MAX_THREADS; j++)
+            {
+                pthread_join(threads[j], NULL);
+            }
         }
 
-
-
-
-
-// --------- FREE QUEUE
+        // --------- FREE QUEUE
 
         // Print and dequeue elements from each queue
-        
+
         for (int i = 0; i < num_queues; i++)
         {
             printf("\nQueue %d:\n", i + 1);
@@ -481,8 +335,6 @@ int main()
 
         // Free memory for the array of queues
         free(queues);
-
-
 
         // Send the uppercase datastreamFromMainServer back to the main server
         // send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);

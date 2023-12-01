@@ -15,10 +15,9 @@
 #include <math.h>    // ceil function
 #include <pthread.h>
 
-// pthread_mutex_t mutex;
+pthread_mutex_t mutex;
 
 // queue struct and variables
-#define MAX_THREADS 5
 #define QUEUE_EMPTY '\0'
 
 typedef struct
@@ -30,7 +29,7 @@ typedef struct
 struct ThreadData
 {
     queue *q;
-    int threadNumber;
+    int threadCountCase;
 };
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -113,20 +112,32 @@ char dequeue(queue *q)
 // void createThreadsForDecode(queue *q, int threadCountCase)
 void *createThreadsForDecode(void *arg)
 {
+    /*
+        1 = a
+        2 = e
+        3 = i
+        4 = o
+        5 = u
+    */
+
+    // Cast the argument back to the correct type
     struct ThreadData *threadData = (struct ThreadData *)arg;
 
     queue *q = threadData->q;
-    int currentThreadIDCASE = threadData->threadNumber;
+    int currentThreadIDCASE = threadData->threadCountCase;
+    printf("Starting server decoder! \n");
+    // printf("Starting server decoder! - Thread: %d\n", threadCountCase);
 
-    printf("Starting server decoder for Thread %d!\n", currentThreadIDCASE);
-
+    // create temp thread to copy data into
     queue tempQueue;
     init_queue(&tempQueue, q->size);
 
-    while (!queue_empty(q))
+    while (!queue_empty(q)) // make sure queue is not empty
     {
+        // remove data
         char element = dequeue(q);
 
+        // go through and uppercase the data based on the id of the thread
         switch (currentThreadIDCASE)
         {
         case 1: // A
@@ -168,17 +179,39 @@ void *createThreadsForDecode(void *arg)
             break;
         }
 
+        // Enqueue the modified or unmodified element into the temporary queue
         enqueue(&tempQueue, element);
     }
 
+    // Transfer elements back to the original queue
     while (!queue_empty(&tempQueue))
     {
         char element = dequeue(&tempQueue);
         enqueue(q, element);
     }
 
+    // Destroy the temporary queue
     queue_destroy(&tempQueue);
 
+
+
+// -----------------
+    // // iterate through and pass data from string to string
+    // if (threadData->threadCountCase < 5) // queue here
+    // {
+    //     struct ThreadData nextThreadData;
+    //     nextThreadData.q = threadData->q; // Use the same queue as the current thread
+    //     nextThreadData.threadCountCase = threadData->threadCountCase + 1;
+    //     pthread_t nextThread;
+    //     pthread_create(&nextThread, NULL, createThreadsForDecode, &nextThreadData);
+    //     pthread_join(nextThread, NULL);
+
+    //     // NEED TO HAVE ServerEncoder HERE!
+    // }
+
+
+
+// -------------
     pthread_exit(NULL);
 }
 
@@ -277,40 +310,42 @@ int main()
                 }
             }
         }
-        // ----
+// ----
         // ENQUEING IS GREAT, NOW WE NEED TO PASS QUEUES INTO THE UPPERCASE THREADING FUNCTION
         // THEN HAVE IT THREAD AND UPPERCASE ACCROSS SUBSEQUENT QUEUES
         // NEED TO USE BLOCKING AND SEPHAHONES
 
         for (int i = 0; i < num_queues; i++)
         {
-            int threadCaseSwitcher = 1;
-            printf("THREADING...\n");
+            // printf("THREADING...");
+            // // Create the first thread
+            // struct ThreadData threadData;
+            // pthread_t firstThread;
+            // pthread_create(&firstThread, NULL, createThreadsForDecode, (void *)&threadData);
+            // pthread_join(firstThread, NULL);
 
-            // Create an array of thread data structures
-            struct ThreadData threadData[MAX_THREADS];
 
-            // Initialize each thread data structure with the appropriate values
-            for (int j = 0; j < MAX_THREADS; j++)
+
+            int threadCaseSwitcher = 1; // only upppercase A's if have 1
+            printf("THREADING...");
+            struct ThreadData threadData;
+            threadData.q = &queues[i];
+            threadData.threadCountCase = threadCaseSwitcher;
+
+            // Create a thread
+            pthread_t thread;
+            if (pthread_create(&thread, NULL, createThreadsForDecode, (void *)&threadData) != 0)
             {
-                threadData[j].q = &queues[i];
-                threadData[j].threadNumber = threadCaseSwitcher;
+                perror("Error creating thread");
+                exit(1);
             }
+            // Wait for the thread to finish
+            pthread_join(thread, NULL);
+          
 
-            // Create and join threads
-            pthread_t threads[MAX_THREADS];
-            for (int j = 0; j < MAX_THREADS; j++)
-            {
-                pthread_create(&threads[j], NULL, createThreadsForDecode, (void *)&threadData[j]);
-            }
-
-            for (int j = 0; j < MAX_THREADS; j++)
-            {
-                pthread_join(threads[j], NULL);
-            }
         }
 
-        // --------- FREE QUEUE
+// --------- FREE QUEUE
 
         // Print and dequeue elements from each queue
 
