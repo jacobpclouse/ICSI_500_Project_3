@@ -28,56 +28,56 @@ char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 
 // -- Function to initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
 // source: https://youtu.be/oyX30WVuEos
-void init_queue(structForQueueBoi *q, int max_size)
+void setupTheQueue(structForQueueBoi *inputQueue, int maximumSizeBoi)
 {
-    q->size = max_size;
-    q->values = malloc(sizeof(char) * q->size);
-    q->num_entries = 0; // start empty
-    q->head = 0;
-    q->tail = 0;
+    inputQueue->size = maximumSizeBoi;
+    inputQueue->values = malloc(sizeof(char) * inputQueue->size);
+    inputQueue->countOfEntries = 0; 
+    inputQueue->head = 0;
+    inputQueue->tail = 0;
 }
 
 
-// add element to the back of the queue (queue is the queue we are adding to, value is what we want to add to the queue)
+// -- Function to add element to the back of the queue --
+// (queueStructureToUse is the queue we are adding to, dataToAppend is what we want to add to the queue)
 // source: https://youtu.be/oyX30WVuEos
-bool enqueue(structForQueueBoi *q, char value)
+bool addToTheQueue(structForQueueBoi *queueStructureToUse, char dataToAppend)
 {
 
     // check to make sure queue is not full
-    // if (queue_full(q))
-    if (q->num_entries == q->size)
+    if (queueStructureToUse->countOfEntries == queueStructureToUse->size)
     {
         return false;
     }
 
     // if not full, add to the back and increase num of entries and move tail
-    q->values[q->tail] = value;
-    q->num_entries++;
-    q->tail = (q->tail + 1) % q->size; // will clock around if reach end of the queue
+    queueStructureToUse->values[queueStructureToUse->tail] = dataToAppend;
+    queueStructureToUse->countOfEntries++;
+    queueStructureToUse->tail = (queueStructureToUse->tail + 1) % queueStructureToUse->size; // will clock around if reach end of the queue
 
     return true;
 }
 
 
-// remove item from our queue
+// -- Function to remove item from our queue -- 
 // source: https://youtu.be/oyX30WVuEos
-char dequeue(structForQueueBoi *q)
+char removeFromTheQueue(structForQueueBoi *queueToDecriment)
 {
 
-    char result;
+    char charDataToReturn;
 
     // if queue empty, break and say that the queue is empty
-    if (q->num_entries == 0)
+    if (queueToDecriment->countOfEntries == 0)
     {
         return QUEUE_EMPTY;
     }
 
     // if not empty, save result that is the queue's head positions and return it
-    result = q->values[q->head];
-    q->head = (q->head + 1) % q->size; // keep track of size
-    q->num_entries--;
+    charDataToReturn = queueToDecriment->values[queueToDecriment->head];
+    queueToDecriment->head = (queueToDecriment->head + 1) % queueToDecriment->size; // keep track of size
+    queueToDecriment->countOfEntries--;
 
-    return result;
+    return charDataToReturn;
 }
 
 // -- Function to create threads to break up and uppercase the input string
@@ -89,18 +89,18 @@ void *serverDecoder(void *arg)
 {
     struct TheadsForAIEOU *myDataFromThread = (struct TheadsForAIEOU *)arg;
 
-    structForQueueBoi *q = myDataFromThread->q;
+    structForQueueBoi *insideQueue = myDataFromThread->q;
     int currentThreadIDCASE = myDataFromThread->threadNumber;
 
     printf("Starting server decoder for Thread %d!\n", currentThreadIDCASE);
 
     structForQueueBoi tempQueue;
-    init_queue(&tempQueue, q->size);
+    setupTheQueue(&tempQueue, insideQueue->size);
 
     // check to see if this causes an infinite loop -- remove while
-    while (!(q->num_entries == 0))
+    while (!(insideQueue->countOfEntries == 0))
     {
-        char element = dequeue(q);
+        char element = removeFromTheQueue(insideQueue);
 
         switch (currentThreadIDCASE)
         {
@@ -147,13 +147,13 @@ void *serverDecoder(void *arg)
             break;
         }
 
-        enqueue(&tempQueue, element);
+        addToTheQueue(&tempQueue, element);
     }
 
-    while (!(tempQueue.num_entries == 0))
+    while (!(tempQueue.countOfEntries == 0))
     {
-        char element = dequeue(&tempQueue);
-        enqueue(q, element);
+        char element = removeFromTheQueue(&tempQueue);
+        addToTheQueue(insideQueue, element);
     }
 
     free(tempQueue.values);
@@ -240,7 +240,7 @@ int main()
         // Initialize each queue in the array
         for (int i = 0; i < num_queues; i++)
         {
-            init_queue(&queues[i], queue_size); // input queues initialize
+            setupTheQueue(&queues[i], queue_size); // input queues initialize
         }
 
         // INPUT QUEUES: Enqueue received data into the queues
@@ -251,13 +251,13 @@ int main()
             {
                 if (indexfortheinputdata < (dataBytesIncoming - 1)) // if not shorter, will screw everything up with carrage return
                 {
-                    enqueue(&queues[i], datastreamFromMainServer[indexfortheinputdata]);
+                    addToTheQueue(&queues[i], datastreamFromMainServer[indexfortheinputdata]);
                     indexfortheinputdata++;
                 }
                 else
                 {
                     // If we reach the end of the received data, fill up with spaces
-                    enqueue(&queues[i], '_');
+                    addToTheQueue(&queues[i], ' '); // orig was underscores _
                 }
             }
         }
@@ -309,10 +309,10 @@ int main()
             printf("\nQueue %d:\n", i + 1);
             for (int j = 0; j < queue_size; j++)
             {
-                char t = dequeue(&queues[i]);
-                uppercasedBuffer[counter] = t;
+                char storeDequeuedData = removeFromTheQueue(&queues[i]);
+                uppercasedBuffer[counter] = storeDequeuedData;
                 counter++;
-                printf("Char #%d --> %c , ", counter, t);
+                printf("Char #%d --> %c , ", counter, storeDequeuedData);
             }
         }
 

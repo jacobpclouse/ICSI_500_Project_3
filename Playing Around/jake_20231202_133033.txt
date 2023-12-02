@@ -1,0 +1,8 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+-=-=-=-=-=-=-=-=-
+<*> New client joined: jake <*>
+<*> New client joined: peter <*>
+[peter]=> jAkE hOw ArE yOU dOIng i'm alright how about you?
+[peter]=> dOIng wEll, yOU AlmOst dOnE wIth yOUr hOmEwOrk? not even close lol

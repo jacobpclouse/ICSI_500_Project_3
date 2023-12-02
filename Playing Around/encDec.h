@@ -29,12 +29,12 @@
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 // -- Structs for queues for helper to store data --
+// pointers to keep track of start and back of queue, also number of allowed entries (5 for us), and size of queue
 typedef struct
 {
     char *values;
-    int head, tail, num_entries, size; // pointers to keep track of start and back of queue, also number of allowed entries (5 for us), and size of queue
+    int head, tail, countOfEntries, size; 
 } structForQueueBoi;
-//} queue;
 
 
 
