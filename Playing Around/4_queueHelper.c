@@ -280,7 +280,7 @@ int main()
                 else
                 {
                     // If we reach the end of the received data, fill up with spaces
-                    enqueue(&queues[i], '_');
+                    enqueue(&queues[i], ' ');
                 }
             }
         }
@@ -345,7 +345,7 @@ int main()
         uppercasedBuffer[counter-1] = '\n';
         uppercasedBuffer[counter] = '\0';
 
-        printf("IMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
+        printf("\nIMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
         // Send the uppercase datastreamFromMainServer back to the main server
         send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
 

@@ -1,8 +1,8 @@
 -=-=-=-=-=-=-=-=-
 Currently logged in clients:
-jake
+artimis
 apollo
 -=-=-=-=-=-=-=-=-
 <*> New client joined: apollo <*>
-apollo is here
-[jake]=> _[jake]=> yOU knOw It_
+i love the way you move
+[artimis]=> I dUOnt knOw whAt tO sAy tO thAt_
