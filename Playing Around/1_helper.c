@@ -67,7 +67,7 @@ bool addToTheQueue(structForQueueBoi *queueStructureToUse, char dataToAppend)
 }
 
 // -- Function to create threads to break up and uppercase the input string
-// Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
+// Source: https://www.geeksforgeeks.org/multithreading-in-c/
 // Source 2: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
 // dequeue -> uppercase -> requeue (for loop size of 5)
 void *serverDecoder(void *arg)
