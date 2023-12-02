@@ -16,10 +16,7 @@
 #include <pthread.h>
 
 
-// // queue struct and variables
-// #define MAX_THREADS 5
-// #define QUEUE_EMPTY '\0'
-
+// global variables
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 
 
@@ -45,24 +42,20 @@ bool queue_empty(structForQueueBoi *q)
     return (q->num_entries == 0);
 }
 
-// -- Function to check to see if we have filled up our queue -- 
-bool queue_full(structForQueueBoi *q)
-{
-    return (q->num_entries == q->size);
-}
-
-// // destroy queue to clean up space + prevent memory leaks
-// void queue_destroy(structForQueueBoi *q)
+// // -- Function to check to see if we have filled up our queue -- 
+// bool queue_full(structForQueueBoi *q)
 // {
-//     free(q->values);
+//     return (q->num_entries == q->size);
 // }
+
 
 // add element to the back of the queue (queue is the queue we are adding to, value is what we want to add to the queue)
 bool enqueue(structForQueueBoi *q, char value)
 {
 
     // check to make sure queue is not full
-    if (queue_full(q))
+    // if (queue_full(q))
+    if (q->num_entries == q->size)
     {
         return false;
     }
@@ -155,7 +148,7 @@ void *serverDecoder(void *arg)
             break;
 
         case 6: // serverencode
-            printf(" server encoding...");
+            printf(">server encoding!\n");
             break;
 
         default:
@@ -171,7 +164,6 @@ void *serverDecoder(void *arg)
         enqueue(q, element);
     }
 
-    // queue_destroy(&tempQueue);
     free(tempQueue.values);
 
     pthread_exit(NULL);
@@ -343,7 +335,6 @@ int main()
         // destroy queues
         for (int i = 0; i < num_queues; i++)
         {
-            // queue_destroy(&queues[i]);
             free(queues[i].values);
         }
 
