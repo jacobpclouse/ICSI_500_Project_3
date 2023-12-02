@@ -5,7 +5,6 @@
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "encDec.h" // all imports in header
 
-
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Global Variables
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -75,7 +74,7 @@ void newClientJoinedPush(char *senderName)
     }
 }
 
-// ****
+// **** NEW TO THIS PROJECT! ****
 // -- Function to handle communication with the helper server --
 void talkWithHelperServer(char *dataSentToHelper, char *returnedDataFromHelper)
 {
@@ -245,7 +244,7 @@ int main(int argc, char *argv[])
     while (1)
     {
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connenctions
-        if (currentClientCount < MAXIMUM_CONNECTED_CLIENTS)                                       // make sure not full
+        if (currentClientCount < MAXIMUM_CONNECTED_CLIENTS)                                 // make sure not full
         {
             // new thread created for each client
             pthread_create(&tid, NULL, clientThreadSplitFunction, &client_socket);

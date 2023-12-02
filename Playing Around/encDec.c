@@ -1,5 +1,5 @@
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-// # encDec.c - Importing Libraries / Modules / Headers 
+// # encDec.c - Importing Libraries / Modules / Headers
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,12 +11,10 @@
 #include <time.h>   // To get use the time function
 #include <stdint.h> // encDecFrame
 #include <ctype.h>  // used for initial uppercase example
-#include <math.h> // for control rounding up with ceiling
+#include <math.h>   // for control rounding up with ceiling
 
 // header
-#include "encDec.h" 
-
-
+#include "encDec.h"
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -34,7 +32,8 @@ void myLogo()
 }
 
 // -- Function to print out when the server connects to the helper --
-void serverConnected(){
+void serverConnected()
+{
     // printf("SERVER CONNECTED");
     printf(" _____                        _____                     _         _  \n");
     printf("|   __|___ ___ _ _ ___ ___   |     |___ ___ ___ ___ ___| |_ ___ _| | \n");
@@ -43,7 +42,8 @@ void serverConnected(){
 }
 
 // -- Function to print out when the server disconnects from the helper --
-void connectionTerminated() {
+void connectionTerminated()
+{
     // printf("CONNECTION TERMINATED...");
     printf(" _____                     _   _            _____               _         _         _ \n");
     printf("|     |___ ___ ___ ___ ___| |_|_|___ ___   |_   _|___ ___ _____|_|___ ___| |_ ___ _| |\n");
@@ -51,8 +51,9 @@ void connectionTerminated() {
     printf("|_____|___|_|_|_|_|___|___|_| |_|___|_|_|    |_| |___|_| |_|_|_|_|_|_|__,|_| |___|___|\n");
 }
 
-// -- Function to print out when the server establishes connect to the helper (on server console--
-void serverConnectedToHelper() {
+// -- Function to print out when the server establishes connect to the helper (on server console) --
+void serverConnectedToHelper()
+{
     printf("\n");
     printf(" _____     _                _____                     _         _ \n");
     printf("|  |  |___| |___ ___ ___   |     |___ ___ ___ ___ ___| |_ ___ _| |\n");

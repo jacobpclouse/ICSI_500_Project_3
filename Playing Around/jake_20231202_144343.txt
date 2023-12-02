@@ -1,8 +1,0 @@
--=-=-=-=-=-=-=-=-
-Currently logged in clients:
-jake
--=-=-=-=-=-=-=-=-
-<*> New client joined: jake <*>
-<*> New client joined: mary <*>
-[mary]=> I lovE pIE me tooo! i love aeiou
-[mary]=> thE rAIn In spAIn fAlls nEAtly In thE drAIn 
