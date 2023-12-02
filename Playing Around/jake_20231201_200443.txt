@@ -3,5 +3,7 @@ Currently logged in clients:
 jake
 -=-=-=-=-=-=-=-=-
 <*> New client joined: jake <*>
-<*> New client joined: mary <*>
-aeious
+<*> New client joined: apollo <*>
+[apollo]=> ApOllO Is hErE_
+you know it
+[apollo]=> _

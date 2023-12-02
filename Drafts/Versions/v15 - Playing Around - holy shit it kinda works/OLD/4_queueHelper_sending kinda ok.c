@@ -289,39 +289,39 @@ int main()
         // THEN HAVE IT THREAD AND UPPERCASE ACCROSS SUBSEQUENT QUEUES
         // NEED TO USE BLOCKING AND SEPHAHONES
 
-        for (int i = 0; i < num_queues; i++)
-        {
-            // int threadCaseSwitcher = 1;
-            printf("THREADING...\n");
+        // for (int i = 0; i < num_queues; i++)
+        // {
+        //     // int threadCaseSwitcher = 1;
+        //     printf("THREADING...\n");
 
-            // Create an array of thread data structures
-            struct ThreadData threadData[MAX_THREADS];
+        //     // Create an array of thread data structures
+        //     struct ThreadData threadData[MAX_THREADS];
 
-            // Initialize each thread data structure with the appropriate values
-            for (int j = 0; j < MAX_THREADS; j++)
-            {
-                threadData[j].q = &queues[i];
-                threadData[j].threadNumber = j + 1;
-                // threadData[j].threadNumber = threadCaseSwitcher;
-            }
+        //     // Initialize each thread data structure with the appropriate values
+        //     for (int j = 0; j < MAX_THREADS; j++)
+        //     {
+        //         threadData[j].q = &queues[i];
+        //         threadData[j].threadNumber = j + 1;
+        //         // threadData[j].threadNumber = threadCaseSwitcher;
+        //     }
 
-            // Create and join threads
-            pthread_t threads[MAX_THREADS];
-            for (int j = 0; j < MAX_THREADS; j++)
-            {
-                // first 5 threads - MAKE SURE THIS WORKS
-                if (j < MAX_THREADS)
-                {
-                    pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
-                }
+        //     // Create and join threads
+        //     pthread_t threads[MAX_THREADS];
+        //     for (int j = 0; j < MAX_THREADS; j++)
+        //     {
+        //         // first 5 threads - MAKE SURE THIS WORKS
+        //         if (j < MAX_THREADS)
+        //         {
+        //             pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
+        //         }
 
-            }
+        //     }
 
-            for (int j = 0; j < MAX_THREADS; j++)
-            {
-                pthread_join(threads[j], NULL);
-            }
-        }
+        //     for (int j = 0; j < MAX_THREADS; j++)
+        //     {
+        //         pthread_join(threads[j], NULL);
+        //     }
+        // }
 
         // --------- FREE QUEUE
 
@@ -342,7 +342,6 @@ int main()
         }
 
         // Null-terminate the string outside the loop
-        uppercasedBuffer[counter-1] = '\n';
         uppercasedBuffer[counter] = '\0';
 
         printf("IMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
