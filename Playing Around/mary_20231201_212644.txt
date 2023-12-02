@@ -1,0 +1,8 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+mary
+-=-=-=-=-=-=-=-=-
+<*> New client joined: mary <*>
+i love aieou
+[jake]=> I lOvE It tOO_owoowow

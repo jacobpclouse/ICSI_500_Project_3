@@ -18,7 +18,7 @@
 #define SETUPHEADER_H
 
 #define BUFFER_SIZE 100 // buffers for helper, server and client
-#define HELPER_SERVER_PORT 1993// the port that the helper server will run on - used in both helper and server
+#define HELPER_SERVER_PORT 1994// the port that the helper server will run on - used in both helper and server
 #define HELPER_SERVER_IP "127.0.0.1" // IP that the helper server will run on, used primarily in server, might use in helper later
 #define MAXIMUM_CONNECTED_CLIENTS 6 // server max number of allowed clients!
 

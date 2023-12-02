@@ -13,12 +13,10 @@
 #include <pthread.h> // threading for the aieou stuff
 #include <stdbool.h> // for queue
 #include <math.h>    // ceil function
-#include <pthread.h>
 
-// pthread_mutex_t mutex;
 
 // queue struct and variables
-#define MAX_THREADS 5
+#define MAX_THREADS 6
 #define QUEUE_EMPTY '\0'
 
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
@@ -33,6 +31,19 @@ struct ThreadData
 {
     queue *q;
     int threadNumber;
+    // int storeNumQueues;
+};
+
+struct serverEncodeStruct
+{
+    queue *q;
+    int threadNumber;
+    char *datastream;  // datastream
+    int dataBytesSize; // size of the datastream
+    int numQueues;     // total number of queues
+    int queueSize;     // size of each queue
+    int serverSocket;  // server socket
+
 };
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -114,7 +125,7 @@ char dequeue(queue *q)
 // caseThread to determine which case we want
 void *serverDecoder(void *arg)
 {
-    struct ThreadData *threadData = (struct ThreadData *)arg;
+    struct serverEncodeStruct *threadData = (struct ThreadData *)arg;
 
     queue *q = threadData->q;
     int currentThreadIDCASE = threadData->threadNumber;
@@ -166,10 +177,6 @@ void *serverDecoder(void *arg)
             }
             break;
 
-        case 6: // serverencode
-            printf(" server encoding...");
-            break;
-
         default:
             break;
         }
@@ -189,10 +196,36 @@ void *serverDecoder(void *arg)
 }
 
 // gets data ready to send back to server
-void *serverEncoder(int server_socket, int dataBytesIncoming)
-{
-    printf("sending back to server.c...\n");
-    send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
+void *serverEncoder(void *arg){
+    printf("Encoding data!");
+
+        struct serverEncodeStruct *threadData = (struct ThreadData *)arg;
+
+        queue *q = threadData->q;
+        int currentThreadIDCASE = threadData->threadNumber;
+            // Print and dequeue elements from each queue
+        // Print and dequeue elements from each queue
+        int counter = 0; // Initialize the counter outside the loop
+
+        for (int i = 0; i < threadData->numQueues; i++)
+        {
+            printf("\nQueue %d:\n", i + 1);
+            for (int j = 0; j < q->size; j++)
+            {
+                char t = dequeue(&q[i]);
+                uppercasedBuffer[counter] = t;
+                counter++;
+                printf("Char #%d --> %c , ", counter, t);
+            }
+        }
+
+        // Null-terminate the string outside the loop
+        uppercasedBuffer[counter-1] = '\n';
+        uppercasedBuffer[counter] = '\0';
+
+        printf("\nSERVERENCODE: Uppercased data: %s\n", uppercasedBuffer);
+        // Send the uppercase datastreamFromMainServer back to the main server
+        send(threadData->serverSocket, uppercasedBuffer, threadData->dataBytesSize, 0);
 }
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -286,7 +319,7 @@ int main()
                 else
                 {
                     // If we reach the end of the received data, fill up with spaces
-                    enqueue(&queues[i], '_');
+                    enqueue(&queues[i], ' ');
                 }
             }
         }
@@ -301,13 +334,21 @@ int main()
             printf("THREADING...\n");
 
             // Create an array of thread data structures
-            struct ThreadData threadData[MAX_THREADS];
+            // serverEncodeStruct
+            struct serverEncodeStruct threadData[MAX_THREADS];
+            // struct ThreadData threadData[MAX_THREADS];
 
             // Initialize each thread data structure with the appropriate values
             for (int j = 0; j < MAX_THREADS; j++)
             {
                 threadData[j].q = &queues[i];
                 threadData[j].threadNumber = j + 1;
+                // the rest of the stuff
+                threadData[j].datastream = datastreamFromMainServer;
+                threadData[j].dataBytesSize = dataBytesIncoming;
+                threadData[j].numQueues = num_queues;
+                threadData[j].queueSize = queue_size;
+                threadData[j].serverSocket = server_socket;
                 // threadData[j].threadNumber = threadCaseSwitcher;
             }
 
@@ -315,10 +356,19 @@ int main()
             pthread_t threads[MAX_THREADS];
             for (int j = 0; j < MAX_THREADS; j++)
             {
-                // first 5 threads - MAKE SURE THIS WORKS
-                if (j < MAX_THREADS)
+                /*
+                                // first 5 threads - MAKE SURE THIS WORKS
+                if (j < MAX_THREADS - 1-)
                 {
                     pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
+                }
+                */
+                // first 5 threads - MAKE SURE THIS WORKS
+                if (j < MAX_THREADS - 1)
+                {
+                    pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
+                }else{
+                    pthread_create(&threads[j], NULL, serverEncoder, (void *)&threadData[j]);
                 }
 
             }
@@ -331,29 +381,28 @@ int main()
 
         // --------- FREE QUEUE
 
-        // Print and dequeue elements from each queue
-        // Print and dequeue elements from each queue
-        int counter = 0; // Initialize the counter outside the loop
+        // // Print and dequeue elements from each queue
+        // // Print and dequeue elements from each queue
+        // int counter = 0; // Initialize the counter outside the loop
 
-        for (int i = 0; i < num_queues; i++)
-        {
-            printf("\nQueue %d:\n", i + 1);
-            for (int j = 0; j < queue_size; j++)
-            {
-                char t = dequeue(&queues[i]);
-                uppercasedBuffer[counter] = t;
-                counter++;
-                printf("Char #%d --> %c , ", counter, t);
-            }
-        }
+        // for (int i = 0; i < num_queues; i++)
+        // {
+        //     printf("\nQueue %d:\n", i + 1);
+        //     for (int j = 0; j < queue_size; j++)
+        //     {
+        //         char t = dequeue(&queues[i]);
+        //         uppercasedBuffer[counter] = t;
+        //         counter++;
+        //         printf("Char #%d --> %c , ", counter, t);
+        //     }
+        // }
 
-        // Null-terminate the string outside the loop
-        uppercasedBuffer[counter-1] = '\n';
-        uppercasedBuffer[counter] = '\0';
+        // // Null-terminate the string outside the loop
+        // uppercasedBuffer[counter-1] = '\n';
+        // uppercasedBuffer[counter] = '\0';
 
-        printf("\nIMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
-        // Send the uppercase datastreamFromMainServer back to the main server
-        serverEncoder(server_socket, dataBytesIncoming);
+        // printf("\nIMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
+        // // Send the uppercase datastreamFromMainServer back to the main server
         // send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
 
         // Free memory for each queue

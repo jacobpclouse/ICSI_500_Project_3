@@ -1,7 +1,0 @@
--=-=-=-=-=-=-=-=-
-Currently logged in clients:
-artimis
--=-=-=-=-=-=-=-=-
-<*> New client joined: artimis <*>
-<*> New client joined: apollo <*>
-[apollo]=> I lOvE thE wAy yOU mOvE_i duont know what to say to that
