@@ -1,0 +1,11 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+shoggoth
+-=-=-=-=-=-=-=-=-
+<*> New client joined: shoggoth <*>
+<*> New client joined: Hp_lovecraft <*>
+[Hp_lovecraft]=> I lOvE wOrkIng frOm hOmE lOl_yeah tell me about it
+[Hp_lovecraft]=> hOw ArE yOU hOlding Up?_ehhh i'm ok, thing have been tough
+[Hp_lovecraft]=> Oh?_yeah, i don't want to talk about it if thats ok with you
+[Hp_lovecraft]=> hEy I tOtAlly UndErstAnd_have a great day!
+[Hp_lovecraft]=> yOU tOO!_

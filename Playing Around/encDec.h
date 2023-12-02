@@ -21,8 +21,8 @@
 #define HELPER_SERVER_PORT 1994// the port that the helper server will run on - used in both helper and server
 #define HELPER_SERVER_IP "127.0.0.1" // IP that the helper server will run on, used primarily in server, might use in helper later
 #define MAXIMUM_CONNECTED_CLIENTS 6 // server max number of allowed clients!
-#define MAX_THREADS 6 // max queue threads
-#define QUEUE_EMPTY '\0' // return when helper at end of queue
+#define MAX_THREADS 6 // max queue threads - helper
+#define QUEUE_EMPTY '\0' // return when helper at end of queue -helper
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Structs

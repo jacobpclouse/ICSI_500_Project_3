@@ -14,6 +14,10 @@
 #include <pthread.h>
 #include <time.h>
 
+
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Global Variables
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 int socketForHelperServer;
 
 // creating struct for clients

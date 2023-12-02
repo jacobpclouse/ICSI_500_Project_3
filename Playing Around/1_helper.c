@@ -15,8 +15,9 @@
 #include <math.h>    // ceil function
 #include <pthread.h>
 
-
-// global variables
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// # Global Variables
+// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 
 
@@ -24,9 +25,9 @@ char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 // # Functions
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-// queue functions below:
-// source: https://youtu.be/oyX30WVuEos
+
 // -- Function to initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
+// source: https://youtu.be/oyX30WVuEos
 void init_queue(structForQueueBoi *q, int max_size)
 {
     q->size = max_size;
@@ -36,20 +37,9 @@ void init_queue(structForQueueBoi *q, int max_size)
     q->tail = 0;
 }
 
-// -- Function to check to see if our queue is empty --
-bool queue_empty(structForQueueBoi *q)
-{
-    return (q->num_entries == 0);
-}
-
-// // -- Function to check to see if we have filled up our queue -- 
-// bool queue_full(structForQueueBoi *q)
-// {
-//     return (q->num_entries == q->size);
-// }
-
 
 // add element to the back of the queue (queue is the queue we are adding to, value is what we want to add to the queue)
+// source: https://youtu.be/oyX30WVuEos
 bool enqueue(structForQueueBoi *q, char value)
 {
 
@@ -68,14 +58,16 @@ bool enqueue(structForQueueBoi *q, char value)
     return true;
 }
 
+
 // remove item from our queue
+// source: https://youtu.be/oyX30WVuEos
 char dequeue(structForQueueBoi *q)
 {
 
     char result;
 
     // if queue empty, break and say that the queue is empty
-    if (queue_empty(q))
+    if (q->num_entries == 0)
     {
         return QUEUE_EMPTY;
     }
@@ -106,7 +98,7 @@ void *serverDecoder(void *arg)
     init_queue(&tempQueue, q->size);
 
     // check to see if this causes an infinite loop -- remove while
-    while (!queue_empty(q))
+    while (!(q->num_entries == 0))
     {
         char element = dequeue(q);
 
@@ -158,7 +150,7 @@ void *serverDecoder(void *arg)
         enqueue(&tempQueue, element);
     }
 
-    while (!queue_empty(&tempQueue))
+    while (!(tempQueue.num_entries == 0))
     {
         char element = dequeue(&tempQueue);
         enqueue(q, element);
@@ -324,10 +316,10 @@ int main()
             }
         }
 
-        uppercasedBuffer[counter-1] = '\n';
+        // uppercasedBuffer[counter-1] = '\n';
         uppercasedBuffer[counter] = '\0';
 
-        printf("\nIMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
+        printf("\n>>IMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
         // Send the uppercase datastreamFromMainServer back to the main server
         serverEncoder(server_socket, dataBytesIncoming);
         // send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
