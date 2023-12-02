@@ -87,10 +87,10 @@ char dequeue(structForQueueBoi *q)
 // caseThread to determine which case we want
 void *serverDecoder(void *arg)
 {
-    struct TheadsForAIEOU *threadData = (struct TheadsForAIEOU *)arg;
+    struct TheadsForAIEOU *myDataFromThread = (struct TheadsForAIEOU *)arg;
 
-    structForQueueBoi *q = threadData->q;
-    int currentThreadIDCASE = threadData->threadNumber;
+    structForQueueBoi *q = myDataFromThread->q;
+    int currentThreadIDCASE = myDataFromThread->threadNumber;
 
     printf("Starting server decoder for Thread %d!\n", currentThreadIDCASE);
 
@@ -271,14 +271,14 @@ int main()
             printf("THREADING...\n");
 
             // Create an array of thread data structures
-            struct TheadsForAIEOU threadData[MAX_THREADS];
+            struct TheadsForAIEOU myDataFromThread[MAX_THREADS];
 
             // Initialize each thread data structure with the appropriate values
             for (int j = 0; j < MAX_THREADS; j++)
             {
-                threadData[j].q = &queues[i];
-                threadData[j].threadNumber = j + 1;
-                // threadData[j].threadNumber = threadCaseSwitcher;
+                myDataFromThread[j].q = &queues[i];
+                myDataFromThread[j].threadNumber = j + 1;
+                // myDataFromThread[j].threadNumber = threadCaseSwitcher;
             }
 
             // Create and join threads
@@ -288,7 +288,7 @@ int main()
                 // first 5 threads - MAKE SURE THIS WORKS
                 if (j < MAX_THREADS)
                 {
-                    pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
+                    pthread_create(&threads[j], NULL, serverDecoder, (void *)&myDataFromThread[j]);
                 }
 
             }
@@ -316,7 +316,7 @@ int main()
             }
         }
 
-        // uppercasedBuffer[counter-1] = '\n';
+        uppercasedBuffer[counter-1] = '\n';
         uppercasedBuffer[counter] = '\0';
 
         printf("\n>>IMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
