@@ -30,7 +30,7 @@ void myLogo()
     printf("    \\ \\/ _` |/ __/ _ \\| '_ \\   / /  | |/ _ \\| | | / __|/ _ \\ \n");
     printf(" /\\_/ / (_| | (_| (_) | |_) | / /___| | (_) | |_| \\__ \\  __/ \n");
     printf(" \\___/ \\__,_|\\___\\___/|_.__/  \\____/|_|\\___/ \\__,_|___/\\___| \n");
-    printf("¡¡Dedicated to Peter Zlomek and Harely Alderson III!!\n\n");
+    printf("¡¡Dedicated to Peter Zlomek and Harely Alderson III (hi mom)!!\n\n");
 }
 
 // -- Function to print out when the server connects to the helper --

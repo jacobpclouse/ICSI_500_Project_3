@@ -15,13 +15,25 @@
 #include <math.h>    // ceil function
 #include <pthread.h>
 
+// pthread_mutex_t mutex;
 
-// // queue struct and variables
-// #define MAX_THREADS 5
-// #define QUEUE_EMPTY '\0'
+// queue struct and variables
+#define MAX_THREADS 5
+#define QUEUE_EMPTY '\0'
 
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 
+typedef struct
+{
+    char *values;
+    int head, tail, num_entries, size; // pointers to keep track of start and back of queue, also number of allowed entries (5 for us), and size of queue
+} queue;
+
+struct ThreadData
+{
+    queue *q;
+    int threadNumber;
+};
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -29,8 +41,8 @@ char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 
 // queue functions below:
 // source: https://youtu.be/oyX30WVuEos
-// -- Function to initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
-void init_queue(structForQueueBoi *q, int max_size)
+// initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
+void init_queue(queue *q, int max_size)
 {
     q->size = max_size;
     q->values = malloc(sizeof(char) * q->size);
@@ -39,26 +51,26 @@ void init_queue(structForQueueBoi *q, int max_size)
     q->tail = 0;
 }
 
-// -- Function to check to see if our queue is empty --
-bool queue_empty(structForQueueBoi *q)
+// check to see if our queue is empty
+bool queue_empty(queue *q)
 {
     return (q->num_entries == 0);
 }
 
-// -- Function to check to see if we have filled up our queue -- 
-bool queue_full(structForQueueBoi *q)
+// check to see if we have filled up our queue
+bool queue_full(queue *q)
 {
     return (q->num_entries == q->size);
 }
 
-// // destroy queue to clean up space + prevent memory leaks
-// void queue_destroy(structForQueueBoi *q)
-// {
-//     free(q->values);
-// }
+// destroy queue to clean up space + prevent memory leaks
+void queue_destroy(queue *q)
+{
+    free(q->values);
+}
 
 // add element to the back of the queue (queue is the queue we are adding to, value is what we want to add to the queue)
-bool enqueue(structForQueueBoi *q, char value)
+bool enqueue(queue *q, char value)
 {
 
     // check to make sure queue is not full
@@ -76,7 +88,7 @@ bool enqueue(structForQueueBoi *q, char value)
 }
 
 // remove item from our queue
-char dequeue(structForQueueBoi *q)
+char dequeue(queue *q)
 {
 
     char result;
@@ -102,14 +114,14 @@ char dequeue(structForQueueBoi *q)
 // caseThread to determine which case we want
 void *serverDecoder(void *arg)
 {
-    struct TheadsForAIEOU *threadData = (struct TheadsForAIEOU *)arg;
+    struct ThreadData *threadData = (struct ThreadData *)arg;
 
-    structForQueueBoi *q = threadData->q;
+    queue *q = threadData->q;
     int currentThreadIDCASE = threadData->threadNumber;
 
     printf("Starting server decoder for Thread %d!\n", currentThreadIDCASE);
 
-    structForQueueBoi tempQueue;
+    queue tempQueue;
     init_queue(&tempQueue, q->size);
 
     // check to see if this causes an infinite loop -- remove while
@@ -171,8 +183,7 @@ void *serverDecoder(void *arg)
         enqueue(q, element);
     }
 
-    // queue_destroy(&tempQueue);
-    free(tempQueue.values);
+    queue_destroy(&tempQueue);
 
     pthread_exit(NULL);
 }
@@ -251,12 +262,14 @@ int main()
         printf("*Data bytes: %d, Queue size: %d, Number of queues: %d\n", dataBytesIncoming, queue_size, num_queues);
 
         // Create an array of queues dynamically
-        structForQueueBoi *queues = malloc(sizeof(structForQueueBoi) * num_queues); // store incoming data from buffer here
+        queue *queues = malloc(sizeof(queue) * num_queues); // store incoming data from buffer here
+        // queue *output_queues = malloc(sizeof(queue) * num_queues); // store output data here, name same size
 
         // Initialize each queue in the array
         for (int i = 0; i < num_queues; i++)
         {
             init_queue(&queues[i], queue_size); // input queues initialize
+            // init_queue(&output_queues[i], queue_size); // output queues initialize
         }
 
         // INPUT QUEUES: Enqueue received data into the queues
@@ -280,6 +293,7 @@ int main()
         // ----
         // ENQUEING IS GREAT, NOW WE NEED TO PASS QUEUES INTO THE UPPERCASE THREADING FUNCTION
         // THEN HAVE IT THREAD AND UPPERCASE ACCROSS SUBSEQUENT QUEUES
+        // NEED TO USE BLOCKING AND SEPHAHONES
 
         for (int i = 0; i < num_queues; i++)
         {
@@ -287,7 +301,7 @@ int main()
             printf("THREADING...\n");
 
             // Create an array of thread data structures
-            struct TheadsForAIEOU threadData[MAX_THREADS];
+            struct ThreadData threadData[MAX_THREADS];
 
             // Initialize each thread data structure with the appropriate values
             for (int j = 0; j < MAX_THREADS; j++)
@@ -317,8 +331,9 @@ int main()
 
         // --------- FREE QUEUE
 
-        // print & dequeue 
-        int counter = 0; // count / keep track of where we are
+        // Print and dequeue elements from each queue
+        // Print and dequeue elements from each queue
+        int counter = 0; // Initialize the counter outside the loop
 
         for (int i = 0; i < num_queues; i++)
         {
@@ -332,6 +347,7 @@ int main()
             }
         }
 
+        // Null-terminate the string outside the loop
         uppercasedBuffer[counter-1] = '\n';
         uppercasedBuffer[counter] = '\0';
 
@@ -340,16 +356,15 @@ int main()
         serverEncoder(server_socket, dataBytesIncoming);
         // send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
 
-        // destroy queues
+        // Free memory for each queue
         for (int i = 0; i < num_queues; i++)
         {
-            // queue_destroy(&queues[i]);
-            free(queues[i].values);
+            queue_destroy(&queues[i]);
         }
 
-        // free memory from queues
+        // Free memory for the array of queues
         free(queues);
-
+        // break;
         // Send the uppercase datastreamFromMainServer back to the main server
         // send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
     }
