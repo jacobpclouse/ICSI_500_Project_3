@@ -9,6 +9,8 @@
         "string_view": "c",
         "atomic": "c",
         "functional": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "string.h": "c",
+        "socket.h": "c"
     }
 }

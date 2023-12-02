@@ -6,9 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <pthread.h>
+#include <pthread.h> // threading for the aieou stuff
 #include <arpa/inet.h>
-#include <stdint.h>
+// #include <stdint.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+#include <time.h>
+#include <stdbool.h> // for queue
+#include <math.h>    // ceil function
 
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

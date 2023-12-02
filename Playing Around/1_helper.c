@@ -3,16 +3,8 @@
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Importing Libraries / Modules / Headers
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#include "encDec.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <pthread.h> // threading for the aieou stuff
-#include <stdbool.h> // for queue
-#include <math.h>    // ceil function
+#include "encDec.h" // all imports in header
+
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Global Variables
@@ -195,7 +187,7 @@ int main()
     }
 
     myLogo(); // startup print outs
-    printf("1_helper node listening on IP: %d on Port %d...\n", INADDR_ANY, HELPER_SERVER_PORT);
+    printf("1_helper node listening on IP: %d on Port: %d...\n", INADDR_ANY, HELPER_SERVER_PORT);
 
     // accept incoming connections
     int server_socket = accept(helperSocket, (struct sockaddr *)&server_addr, &addr_size);

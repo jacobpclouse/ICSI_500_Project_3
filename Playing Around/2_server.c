@@ -3,16 +3,8 @@
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Importing Libraries / Modules / Headers
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#include "encDec.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <pthread.h>
-#include <time.h>
+#include "encDec.h" // all imports in header
+
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Global Variables
@@ -209,6 +201,7 @@ int main(int argc, char *argv[])
     // start listening on, error if issue
     if (listen(server_socket, 100) == 0)
     {
+        myLogo(); // startup print outs
         printf("2_server listening on IP: %s on Port: %d ...\n", runServerOnThisIP, portno);
     }
     else
@@ -262,7 +255,7 @@ int main(int argc, char *argv[])
         else
         {
             // print if max num of client reached!
-            printf("Max number of participants reached, can't connect now.\n");
+            printf("ERROR: Max num of clients reach, try again later.\n");
             close(client_socket); // close client socket
         }
     }

@@ -1,0 +1,8 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+mary
+-=-=-=-=-=-=-=-=-
+<*> New client joined: mary <*>
+i love pie
+[jake]=> mE tOOO! I lovE AEIOU the rain in spain falls neatly in the drain
