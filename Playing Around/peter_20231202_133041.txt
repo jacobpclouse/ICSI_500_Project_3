@@ -1,9 +1,0 @@
--=-=-=-=-=-=-=-=-
-Currently logged in clients:
-jake
-peter
--=-=-=-=-=-=-=-=-
-<*> New client joined: peter <*>
-jake how are you doing
-[jake]=> I'm AlrIght hOw AbOUt yOU? doing well, you almost done with your homework?
-[jake]=> nOt EvEn clOsE lOl 

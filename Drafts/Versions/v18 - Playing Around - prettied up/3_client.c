@@ -22,7 +22,6 @@
 // source: https://stackoverflow.com/questions/5141960/get-the-current-time-in-c
 char *createFileName(const char *username)
 {
-    // grab data time, filename, allocate size for it
     time_t currentTime;
     struct tm *timeDataBoi;
     char *filenameBoi = (char *)malloc(64);
@@ -36,7 +35,6 @@ char *createFileName(const char *username)
     time(&currentTime);
     timeDataBoi = localtime(&currentTime);
 
-    // setup struct for name for txt file
     // source: https://stackoverflow.com/questions/5141960/get-the-current-time-in-c
     snprintf(filenameBoi, 64, "%s_%04d%02d%02d_%02d%02d%02d.txt",
              username,
@@ -54,7 +52,6 @@ char *createFileName(const char *username)
 // Source: https://www.geeksforgeeks.org/use-fflushstdin-c/
 void writeMessageToFile(FILE *outputFile, const char *dataToWriteToFile)
 {
-    // immediatly flush buffer to the file
     fprintf(outputFile, "%s", dataToWriteToFile);
     fflush(outputFile);
 }

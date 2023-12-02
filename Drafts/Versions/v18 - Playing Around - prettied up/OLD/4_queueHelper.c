@@ -15,65 +15,96 @@
 #include <math.h>    // ceil function
 #include <pthread.h>
 
-// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-// # Global Variables
-// # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// pthread_mutex_t mutex;
+
+// queue struct and variables
+#define MAX_THREADS 5
+#define QUEUE_EMPTY '\0'
+
 char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
+
+typedef struct
+{
+    char *values;
+    int head, tail, num_entries, size; // pointers to keep track of start and back of queue, also number of allowed entries (5 for us), and size of queue
+} queue;
+
+struct ThreadData
+{
+    queue *q;
+    int threadNumber;
+};
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-// -- Function to remove item from our queue --
+// queue functions below:
 // source: https://youtu.be/oyX30WVuEos
-char removeFromTheQueue(structForQueueBoi *queueToDecriment)
+// initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
+void init_queue(queue *q, int max_size)
 {
-
-    char charDataToReturn;
-
-    // if queue empty, break and say that the queue is empty
-    if (queueToDecriment->countOfEntries == 0)
-    {
-        return '\0'; // exit out
-    }
-
-    // if not empty, save result that is the queue's head positions and return it
-    charDataToReturn = queueToDecriment->values[queueToDecriment->head];
-    queueToDecriment->head = (queueToDecriment->head + 1) % queueToDecriment->size; // keep track of size
-    queueToDecriment->countOfEntries--;
-
-    return charDataToReturn;
+    q->size = max_size;
+    q->values = malloc(sizeof(char) * q->size);
+    q->num_entries = 0; // start empty
+    q->head = 0;
+    q->tail = 0;
 }
 
-// -- Function to initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
-// source: https://youtu.be/oyX30WVuEos
-void setupTheQueue(structForQueueBoi *inputQueue, int maximumSizeBoi)
+// check to see if our queue is empty
+bool queue_empty(queue *q)
 {
-    inputQueue->size = maximumSizeBoi;
-    inputQueue->values = malloc(sizeof(char) * inputQueue->size);
-    inputQueue->countOfEntries = 0;
-    inputQueue->head = 0;
-    inputQueue->tail = 0;
+    return (q->num_entries == 0);
 }
 
-// -- Function to add element to the back of the queue --
-// (queueStructureToUse is the queue we are adding to, dataToAppend is what we want to add to the queue)
-// source: https://youtu.be/oyX30WVuEos
-bool addToTheQueue(structForQueueBoi *queueStructureToUse, char dataToAppend)
+// check to see if we have filled up our queue
+bool queue_full(queue *q)
+{
+    return (q->num_entries == q->size);
+}
+
+// destroy queue to clean up space + prevent memory leaks
+void queue_destroy(queue *q)
+{
+    free(q->values);
+}
+
+// add element to the back of the queue (queue is the queue we are adding to, value is what we want to add to the queue)
+bool enqueue(queue *q, char value)
 {
 
     // check to make sure queue is not full
-    if (queueStructureToUse->countOfEntries == queueStructureToUse->size)
+    if (queue_full(q))
     {
         return false;
     }
 
     // if not full, add to the back and increase num of entries and move tail
-    queueStructureToUse->values[queueStructureToUse->tail] = dataToAppend;
-    queueStructureToUse->countOfEntries++;
-    queueStructureToUse->tail = (queueStructureToUse->tail + 1) % queueStructureToUse->size; // will clock around if reach end of the queue
+    q->values[q->tail] = value;
+    q->num_entries++;
+    q->tail = (q->tail + 1) % q->size; // will clock around if reach end of the queue
 
     return true;
+}
+
+// remove item from our queue
+char dequeue(queue *q)
+{
+
+    char result;
+
+    // if queue empty, break and say that the queue is empty
+    if (queue_empty(q))
+    {
+        return QUEUE_EMPTY;
+    }
+
+    // if not empty, save result that is the queue's head positions and return it
+    result = q->values[q->head];
+    q->head = (q->head + 1) % q->size; // keep track of size
+    q->num_entries--;
+
+    return result;
 }
 
 // -- Function to create threads to break up and uppercase the input string
@@ -83,78 +114,76 @@ bool addToTheQueue(structForQueueBoi *queueStructureToUse, char dataToAppend)
 // caseThread to determine which case we want
 void *serverDecoder(void *arg)
 {
-    // creating struct for args data
-    struct TheadsForAIEOU *myDataFromThread = (struct TheadsForAIEOU *)arg;
+    struct ThreadData *threadData = (struct ThreadData *)arg;
 
-    structForQueueBoi *insideQueue = myDataFromThread->q;
-    int currentThreadIDCASE = myDataFromThread->threadNumber;
+    queue *q = threadData->q;
+    int currentThreadIDCASE = threadData->threadNumber;
 
     printf("Starting server decoder for Thread %d!\n", currentThreadIDCASE);
 
-    // temp queue to hold data taken from orig queue
-    structForQueueBoi tempQueue;
-    setupTheQueue(&tempQueue, insideQueue->size);
+    queue tempQueue;
+    init_queue(&tempQueue, q->size);
 
-    // uppercasing part - check id of the thread to determine the switch
-    while (!(insideQueue->countOfEntries == 0))
+    // check to see if this causes an infinite loop -- remove while
+    while (!queue_empty(q))
     {
-        char indexToUppercase = removeFromTheQueue(insideQueue);
+        char element = dequeue(q);
 
         switch (currentThreadIDCASE)
         {
         case 1: // A
-            if (indexToUppercase == 'a')
+            if (element == 'a')
             {
-                indexToUppercase = 'A';
+                element = 'A';
             }
             break;
 
         case 2: // E
-            if (indexToUppercase == 'e')
+            if (element == 'e')
             {
-                indexToUppercase = 'E';
+                element = 'E';
             }
             break;
 
         case 3: // I
-            if (indexToUppercase == 'i')
+            if (element == 'i')
             {
-                indexToUppercase = 'I';
+                element = 'I';
             }
             break;
 
         case 4: // O
-            if (indexToUppercase == 'o')
+            if (element == 'o')
             {
-                indexToUppercase = 'O';
+                element = 'O';
             }
             break;
 
         case 5: // U
-            if (indexToUppercase == 'u')
+            if (element == 'u')
             {
-                indexToUppercase = 'U';
+                element = 'U';
             }
             break;
 
         case 6: // serverencode
-            printf(">server encoding!\n");
+            printf(" server encoding...");
             break;
 
         default:
             break;
         }
 
-        addToTheQueue(&tempQueue, indexToUppercase);
+        enqueue(&tempQueue, element);
     }
 
-    while (!(tempQueue.countOfEntries == 0))
+    while (!queue_empty(&tempQueue))
     {
-        char indexToUppercase = removeFromTheQueue(&tempQueue);
-        addToTheQueue(insideQueue, indexToUppercase);
+        char element = dequeue(&tempQueue);
+        enqueue(q, element);
     }
 
-    free(tempQueue.values);
+    queue_destroy(&tempQueue);
 
     pthread_exit(NULL);
 }
@@ -227,56 +256,59 @@ int main()
 
         // first enqueue all the data we have
         // buffer is 100, so we need 20 queues
-        int sizeOfQueue = 5; // Size of each queue
-        int numberOfQueues = (int)ceil((double)dataBytesIncoming / sizeOfQueue);
-        // int numberOfQueues = 20;
-        printf("*Data bytes: %d, Queue size: %d, Number of queues: %d\n", dataBytesIncoming, sizeOfQueue, numberOfQueues);
+        int queue_size = 5; // Size of each queue
+        int num_queues = (int)ceil((double)dataBytesIncoming / queue_size);
+        // int num_queues = 20;
+        printf("*Data bytes: %d, Queue size: %d, Number of queues: %d\n", dataBytesIncoming, queue_size, num_queues);
 
         // Create an array of queues dynamically
-        structForQueueBoi *queues = malloc(sizeof(structForQueueBoi) * numberOfQueues); // store incoming data from buffer here
+        queue *queues = malloc(sizeof(queue) * num_queues); // store incoming data from buffer here
+        // queue *output_queues = malloc(sizeof(queue) * num_queues); // store output data here, name same size
 
         // Initialize each queue in the array
-        for (int i = 0; i < numberOfQueues; i++)
+        for (int i = 0; i < num_queues; i++)
         {
-            setupTheQueue(&queues[i], sizeOfQueue); // input queues initialize
+            init_queue(&queues[i], queue_size); // input queues initialize
+            // init_queue(&output_queues[i], queue_size); // output queues initialize
         }
 
         // INPUT QUEUES: Enqueue received data into the queues
         int indexfortheinputdata = 0;
-        for (int i = 0; i < numberOfQueues; i++)
+        for (int i = 0; i < num_queues; i++)
         {
-            for (int j = 0; j < sizeOfQueue; j++)
+            for (int j = 0; j < queue_size; j++)
             {
                 if (indexfortheinputdata < (dataBytesIncoming - 1)) // if not shorter, will screw everything up with carrage return
                 {
-                    addToTheQueue(&queues[i], datastreamFromMainServer[indexfortheinputdata]);
+                    enqueue(&queues[i], datastreamFromMainServer[indexfortheinputdata]);
                     indexfortheinputdata++;
                 }
                 else
                 {
                     // If we reach the end of the received data, fill up with spaces
-                    addToTheQueue(&queues[i], ' '); // orig was underscores _
+                    enqueue(&queues[i], '_');
                 }
             }
         }
         // ----
         // ENQUEING IS GREAT, NOW WE NEED TO PASS QUEUES INTO THE UPPERCASE THREADING FUNCTION
         // THEN HAVE IT THREAD AND UPPERCASE ACCROSS SUBSEQUENT QUEUES
+        // NEED TO USE BLOCKING AND SEPHAHONES
 
-        for (int i = 0; i < numberOfQueues; i++)
+        for (int i = 0; i < num_queues; i++)
         {
             // int threadCaseSwitcher = 1;
             printf("THREADING...\n");
 
             // Create an array of thread data structures
-            struct TheadsForAIEOU myDataFromThread[MAX_THREADS];
+            struct ThreadData threadData[MAX_THREADS];
 
             // Initialize each thread data structure with the appropriate values
             for (int j = 0; j < MAX_THREADS; j++)
             {
-                myDataFromThread[j].q = &queues[i];
-                myDataFromThread[j].threadNumber = j + 1;
-                // myDataFromThread[j].threadNumber = threadCaseSwitcher;
+                threadData[j].q = &queues[i];
+                threadData[j].threadNumber = j + 1;
+                // threadData[j].threadNumber = threadCaseSwitcher;
             }
 
             // Create and join threads
@@ -286,8 +318,9 @@ int main()
                 // first 5 threads - MAKE SURE THIS WORKS
                 if (j < MAX_THREADS)
                 {
-                    pthread_create(&threads[j], NULL, serverDecoder, (void *)&myDataFromThread[j]);
+                    pthread_create(&threads[j], NULL, serverDecoder, (void *)&threadData[j]);
                 }
+
             }
 
             for (int j = 0; j < MAX_THREADS; j++)
@@ -298,38 +331,42 @@ int main()
 
         // --------- FREE QUEUE
 
-        // print & dequeue
-        int counter = 0; // count / keep track of where we are
+        // Print and dequeue elements from each queue
+        // Print and dequeue elements from each queue
+        int counter = 0; // Initialize the counter outside the loop
 
-        for (int i = 0; i < numberOfQueues; i++)
+        for (int i = 0; i < num_queues; i++)
         {
             printf("\nQueue %d:\n", i + 1);
-            for (int j = 0; j < sizeOfQueue; j++)
+            for (int j = 0; j < queue_size; j++)
             {
-                char storeDequeuedData = removeFromTheQueue(&queues[i]);
-                uppercasedBuffer[counter] = storeDequeuedData;
+                char t = dequeue(&queues[i]);
+                uppercasedBuffer[counter] = t;
                 counter++;
-                printf("Char #%d --> %c , ", counter, storeDequeuedData);
+                printf("Char #%d --> %c , ", counter, t);
             }
         }
 
-        uppercasedBuffer[counter - 1] = '\n';
+        // Null-terminate the string outside the loop
+        uppercasedBuffer[counter-1] = '\n';
         uppercasedBuffer[counter] = '\0';
 
-        printf("\n>>IMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
-        // send the uppercased data back to the main server
-
+        printf("\nIMPORTANT: Uppercased data: %s\n", uppercasedBuffer);
+        // Send the uppercase datastreamFromMainServer back to the main server
         serverEncoder(server_socket, dataBytesIncoming);
         // send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
 
-        // destroy queues
-        for (int i = 0; i < numberOfQueues; i++)
+        // Free memory for each queue
+        for (int i = 0; i < num_queues; i++)
         {
-            free(queues[i].values);
+            queue_destroy(&queues[i]);
         }
 
-        // free memory from queues
+        // Free memory for the array of queues
         free(queues);
+        // break;
+        // Send the uppercase datastreamFromMainServer back to the main server
+        // send(server_socket, uppercasedBuffer, dataBytesIncoming, 0);
     }
 
     // close sockets for cleanup

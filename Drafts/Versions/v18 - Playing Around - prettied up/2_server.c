@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <time.h>
 
+
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Global Variables
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -21,7 +22,7 @@ int socketForHelperServer;
 
 // creating struct for clients
 struct organizedClientData clients[MAXIMUM_CONNECTED_CLIENTS];
-int currentClientCount = 0;
+int client_count = 0;
 
 // # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // # Functions
@@ -31,19 +32,18 @@ int currentClientCount = 0;
 // Source: https://stackoverflow.com/questions/41104762/sent-a-message-to-all-clients-with-c-programming
 void outputConnectedClients(int selectedClient)
 {
-    // store client list
-    char listOfClients[BUFFER_SIZE];
-    memset(listOfClients, 0, BUFFER_SIZE);
 
-    // run through all clients
-    for (int i = 0; i < currentClientCount; i++)
+    char listOfClients[BUFFER_SIZE];       // Create a buffer to store the list of clients
+    memset(listOfClients, 0, BUFFER_SIZE); // Initialize the buffer with zeros
+
+    // Loop through each logged-in client
+    for (int i = 0; i < client_count; i++)
     {
-        // grab all names merge together for output
+        // Concatenate the name of each client to the listOfClients buffer, followed by a newline
         strcat(listOfClients, clients[i].name);
         strcat(listOfClients, "\n");
     }
 
-    // setup output buffer and banner
     char communicationToSend[BUFFER_SIZE];                                                                                               // Create a buffer to store the final message to be sent
     snprintf(communicationToSend, BUFFER_SIZE, "-=-=-=-=-=-=-=-=-\nCurrently logged in clients:\n%s-=-=-=-=-=-=-=-=-\n", listOfClients); // Format the message with the list of clients
     send(selectedClient, communicationToSend, strlen(communicationToSend), 0);                                                           // Send the message to the specified client
@@ -57,115 +57,119 @@ void sendPublicMessage(char *inputData, int selectedClient, char *senderName)
     char outboundMessage[BUFFER_SIZE];                                          // Create a buffer to store the formatted message
     snprintf(outboundMessage, BUFFER_SIZE, "[%s]=> %s", senderName, inputData); // Format the message with the sender's name
 
-    // run through all clients
-    for (int i = 0; i < currentClientCount; i++)
+    // Iterate through all connected clients
+    for (int i = 0; i < client_count; i++)
     {
-        // only send message to client if socket matches specific client
+        // Check if the current client is not the one specified in the parameter
         if (clients[i].socket != selectedClient)
         {
+            // Send the formatted message to the current client using its socket
             send(clients[i].socket, outboundMessage, strlen(outboundMessage), 0);
         }
     }
 }
 
 // -- Function to let everyone know when a new client joins the server --
-// Source: https://stackoverflow.com/questions/41104762/sent-a-message-to-all-clients-with-c-programming
 void newClientJoinedPush(char *senderName)
 {
-    // buffer for new client msg + grab sender name
+    // Create a buffer to store the new client message
     char outboundPushNotification[BUFFER_SIZE];
+
+    // Format the message indicating the new client's name
     snprintf(outboundPushNotification, BUFFER_SIZE, "<*> New client joined: %s <*>\n", senderName);
 
-    // send to all connected clients
-    for (int i = 0; i < currentClientCount; i++)
+    // Iterate through all connected clients
+    for (int i = 0; i < client_count; i++)
     {
+        // Send the new client message to each client's socket
         send(clients[i].socket, outboundPushNotification, strlen(outboundPushNotification), 0);
     }
 }
 
 // ****
-// -- Function to handle communication with the helper server --
+// Function to handle communication with the helper server
 void talkWithHelperServer(char *dataSentToHelper, char *returnedDataFromHelper)
 {
-    // send and recieve with sockets
     send(socketForHelperServer, dataSentToHelper, strlen(dataSentToHelper), 0);
     recv(socketForHelperServer, returnedDataFromHelper, BUFFER_SIZE, 0);
 }
 // **
 
-//  -- Function that handles full communication with multiple clients -- THREADING OH LORD*****
-// Source: https://www.geeksforgeeks.org/multithreading-in-c/
+// Function that handles full communication with multiple clients *****
 void *clientThreadSplitFunction(void *arg)
 {
-    // grab client id, initalize vars and store important id data
-    int clientSocketID = *((int *)arg);
-    char dataWeWantToSend[BUFFER_SIZE];
-    char origSender[BUFFER_SIZE];
+    // Extract the client socket from the argument
+    int client_socket = *((int *)arg);
+
+    // Buffer to store messages and sender names
+    char message[BUFFER_SIZE];
+    char sender_name[BUFFER_SIZE];
     int dataBytesIncoming;
 
-    // grab sender name, exit if can't get it
-    dataBytesIncoming = recv(clientSocketID, origSender, BUFFER_SIZE, 0);
+    // Receive the sender's name from the client
+    dataBytesIncoming = recv(client_socket, sender_name, BUFFER_SIZE, 0);
     if (dataBytesIncoming <= 0)
     {
-        close(clientSocketID);
+        // If unable to receive, close the socket and exit the thread
+        close(client_socket);
         pthread_exit(NULL);
     }
 
-    origSender[dataBytesIncoming] = '\0';
+    // Null-terminate the sender's name
+    sender_name[dataBytesIncoming] = '\0';
 
-    // init struct, grab client info & store it
-    struct organizedClientData newBoi;
-    newBoi.socket = clientSocketID;
-    strncpy(newBoi.name, origSender, BUFFER_SIZE);
+    // Store the client information in the array
+    struct organizedClientData new_client;
+    new_client.socket = client_socket;
+    strncpy(new_client.name, sender_name, BUFFER_SIZE);
 
-    clients[currentClientCount] = newBoi;
-    currentClientCount++;
+    clients[client_count] = new_client;
+    client_count++;
 
-    // send out client list
-    outputConnectedClients(clientSocketID);
+    // Send the client list to the new client
+    outputConnectedClients(client_socket);
 
-    // send push that new client joined
-    newClientJoinedPush(origSender);
+    // Notify all clients about the new client
+    newClientJoinedPush(sender_name);
 
-    // main communication loop
+    // Main loop to handle client messages
     while (1)
     {
-        // intake client messages
-        dataBytesIncoming = recv(clientSocketID, dataWeWantToSend, BUFFER_SIZE, 0);
+        // Receive a message from the client
+        dataBytesIncoming = recv(client_socket, message, BUFFER_SIZE, 0);
         if (dataBytesIncoming <= 0)
         {
-            // when client disconnects, close socket and then loop through to find client id and remove it from array
-            close(clientSocketID);
-            // printf("Client %d left!",clientSocketID);
+            // If client disconnected, close the socket and remove from the array
+            close(client_socket);
 
-            for (int i = 0; i < currentClientCount; i++)
+            // Find the client in the array and remove it
+            for (int i = 0; i < client_count; i++)
             {
-                if (clients[i].socket == clientSocketID)
+                if (clients[i].socket == client_socket)
                 {
-                    for (int j = i; j < currentClientCount - 1; j++)
+                    for (int j = i; j < client_count - 1; j++)
                     {
                         clients[j] = clients[j + 1];
                     }
-                    currentClientCount--;
+                    client_count--;
                 }
             }
 
-            // order 66 the thread
+            // Exit the thread
             pthread_exit(NULL);
         }
-        dataWeWantToSend[dataBytesIncoming] = '\0';
+        // Null-terminate the received message
+        message[dataBytesIncoming] = '\0';
 
         // -----
-
         // send the message to the helper server for processing
-        char outputBufferBoi[BUFFER_SIZE];
-        talkWithHelperServer(dataWeWantToSend, outputBufferBoi);
+        char result[BUFFER_SIZE];
+        talkWithHelperServer(message, result);
 
         // send result to all clients
-        sendPublicMessage(outputBufferBoi, clientSocketID, origSender);
-
+        sendPublicMessage(result, client_socket, sender_name);
         // clear out result
-        memset(outputBufferBoi, 0, BUFFER_SIZE);
+        memset(result, 0, BUFFER_SIZE);
         // result[dataBytesIncoming] = '\0'; // ?? this should work
     }
 
@@ -252,7 +256,7 @@ int main(int argc, char *argv[])
     while (1)
     {
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connenctions
-        if (currentClientCount < MAXIMUM_CONNECTED_CLIENTS)                                       // make sure not full
+        if (client_count < MAXIMUM_CONNECTED_CLIENTS)                                       // make sure not full
         {
             // new thread created for each client
             pthread_create(&tid, NULL, clientThreadSplitFunction, &client_socket);
