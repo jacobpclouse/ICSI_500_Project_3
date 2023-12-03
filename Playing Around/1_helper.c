@@ -16,6 +16,7 @@ char uppercasedBuffer[BUFFER_SIZE]; // to store thread data back from queue
 
 // -- Function to remove item from our queue --
 // source: https://youtu.be/oyX30WVuEos
+// source 2: https://youtu.be/dn01XST9-bI
 char removeFromTheQueue(structForQueueBoi *queueToDecriment)
 {
 
@@ -37,6 +38,7 @@ char removeFromTheQueue(structForQueueBoi *queueToDecriment)
 
 // -- Function to initalize queue, pass in a pointer to the queue struct and tell it the size we want to allocate
 // source: https://youtu.be/oyX30WVuEos
+// source 2: https://youtu.be/dn01XST9-bI
 void setupTheQueue(structForQueueBoi *inputQueue, int maximumSizeBoi)
 {
     inputQueue->size = maximumSizeBoi;
@@ -49,6 +51,7 @@ void setupTheQueue(structForQueueBoi *inputQueue, int maximumSizeBoi)
 // -- Function to add element to the back of the queue --
 // (queueStructureToUse is the queue we are adding to, dataToAppend is what we want to add to the queue)
 // source: https://youtu.be/oyX30WVuEos
+// source 2: https://youtu.be/dn01XST9-bI
 bool addToTheQueue(structForQueueBoi *queueStructureToUse, char dataToAppend)
 {
 
