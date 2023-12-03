@@ -1,0 +1,7 @@
+-=-=-=-=-=-=-=-=-
+Currently logged in clients:
+jake
+peter
+-=-=-=-=-=-=-=-=-
+<*> New client joined: peter <*>
+[jake]=> ThE rAIn In spAIn fAlls neAtly In thE drAIn!
